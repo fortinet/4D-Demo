@@ -1,0 +1,55 @@
+config vpn ipsec phase1-interface
+    edit "VPN1"
+        set auto-discovery-sender enable
+    next
+    edit "VPN2"
+        set auto-discovery-sender enable
+    next
+end
+
+
+config router bgp
+    set additional-path enable
+    set additional-path-select 4
+    config neighbor-group
+        edit "VPN1"
+            set additional-path send
+        next
+        edit "VPN2"
+            set additional-path send
+        next
+    end
+end
+
+config router policy
+    edit 1
+        set input-device "VPN1"
+        set srcaddr "all"
+        set dstaddr "all"
+        set output-device "VPN1"
+    next
+    edit 2
+        set input-device "VPN2"
+        set srcaddr "all"
+        set dstaddr "all"
+        set output-device "VPN2"
+    next
+end
+
+
+config firewall policy
+    edit 5
+        set name "Branch to Branch"
+        set srcintf "virtual-wan-link"
+        set dstintf "virtual-wan-link"
+        set action accept
+        set srcaddr "Branch-NET"
+        set dstaddr "Branch-NET"
+        set schedule "always"
+        set service "ALL"
+        set utm-status enable
+        set ssl-ssh-profile "certificate-inspection"
+        set application-list "default"
+        set logtraffic all
+    next
+end

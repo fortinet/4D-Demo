@@ -1,0 +1,66 @@
+config firewall service custom
+edit "CustomApp-5000"
+        set udp-portrange 5000
+    next
+end
+
+config firewall policy
+    edit 4
+        set name "FEC test"
+        set srcintf "port3"
+        set dstintf "HUB1" "HUB2"
+        set action accept
+        set srcaddr "Branch-NET"
+        set dstaddr "Datacenter"
+        set schedule "always"
+        set service "CustomApp-5000"
+        set logtraffic all
+        set fec enable
+        set comments ""
+    next
+    move 4 before 2
+end
+
+config vpn ipsec fec
+	edit "dc_fec"
+		config mappings
+			edit 1
+				set base 8
+				set redundant 2
+				set packet-loss-threshold 5
+			next
+			edit 2
+				set base 5
+				set redundant 2
+				set packet-loss-threshold 10
+			next
+		end
+	next
+end
+
+config vpn ipsec phase1-interface 
+    edit "HUB1-VPN1"
+		set fec-egress enable
+		set fec-ingress enable
+		set fec-mapping-profile dc_fec
+		set fec-health-check HUB1_HC
+    next
+    edit "HUB1-VPN2"
+		set fec-egress enable
+		set fec-ingress enable
+		set fec-mapping-profile dc_fec
+		set fec-health-check HUB1_HC
+    next
+    edit "HUB2-VPN1"
+		set fec-egress enable
+		set fec-ingress enable
+		set fec-mapping-profile dc_fec
+		set fec-health-check HUB2_HC
+    next
+    edit "HUB2-VPN2"
+		set fec-egress enable
+		set fec-ingress enable
+		set fec-mapping-profile dc_fec
+		set fec-health-check HUB2_HC
+    next
+end

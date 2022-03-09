@@ -1,0 +1,91 @@
+config router community-list
+    edit "65000:1"
+        config rule
+            edit 1
+                set action permit
+                set match "65000:1"
+            next
+        end
+	next
+	edit "65000:2"
+        config rule
+            edit 1
+                set action permit
+                set match "65000:2"
+            next
+        end
+    next
+    edit "65000:5"
+        config rule
+            edit 1
+                set action permit
+                set match "65000:5"
+            next
+        end
+    next
+end
+
+config router route-map
+edit "VPN1-RouteMap_IN"
+        config rule
+            edit 3
+                set match-community "65000:1"
+                set set-route-tag 1
+            next
+            edit 4
+                set match-community "65000:2"
+                set set-route-tag 2
+            next
+            edit 5
+                set match-community "65000:5"
+                set set-aspath "65000"
+                set set-route-tag 5
+            next
+        end
+    next
+    edit "VPN2-RouteMap_IN"
+        config rule
+            edit 3
+                set match-community "65000:1"
+                set set-route-tag 1
+            next
+            edit 4
+                set match-community "65000:2"
+                set set-route-tag 2
+            next
+            edit 5
+                set match-community "65000:5"
+                set set-route-tag 5
+            next
+        end
+    next
+end
+
+config system sdwan
+	config service
+		edit 1
+			set name "ToBranch-VPN1"
+			set route-tag 1
+			set src "all"
+			set priority-members 1
+		next
+		edit 2
+			set name "ToBranch-VPN2"
+			set route-tag 2
+			set src "all"
+			set priority-members 2
+		next
+	end
+end
+
+
+config router bgp
+    config neighbor-group
+        edit "VPN1"
+            set route-map-in "VPN1-RouteMap_IN"
+        next
+        edit "VPN2"
+            set route-map-in "VPN2-RouteMap_IN"
+        next
+    end
+end

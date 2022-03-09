@@ -1,0 +1,31 @@
+config vpn ipsec phase1-interface
+    edit "VPN1"
+    set fec-egress enable
+    set fec-ingress enable
+    next
+	edit "VPN2"
+    set fec-egress enable
+    set fec-ingress enable
+    next
+end
+
+config firewall service custom
+edit "CustomApp-5000"
+        set udp-portrange 5000
+    next
+end
+
+config firewall policy
+    edit 6
+        set status enable
+        set srcintf "virtual-wan-link"
+        set dstintf "port3"
+        set action accept
+        set srcaddr "Branch-NET"
+        set dstaddr "Datacenter"
+        set schedule "always"
+        set service "CustomApp-5000"
+        set fec enable
+    next
+    move 6 before 2
+end

@@ -1,0 +1,66 @@
+config router access-list
+    edit "LAN1"
+        config rule
+            edit 1
+                set prefix 10.1.3.0 255.255.255.0
+            next
+        end
+    next
+end
+
+
+config router route-map
+    edit "Primary"
+        config rule
+            edit 1
+                set match-ip-address "LAN1"
+                set set-community "65000:1"
+            next
+        end
+    next
+    edit "Secondary"
+        config rule
+            edit 1
+                set match-ip-address "LAN1"
+                set set-community "65000:2"
+            next
+        end
+    next
+    edit "Out-of-SLA"
+        config rule
+            edit 1
+                set match-ip-address "LAN1"
+                set set-community "65000:5"
+            next
+        end
+    next
+end
+
+config router bgp
+    config neighbor
+        edit "10.10.10.253"
+            set route-map-out "Out-of-SLA"
+            set route-map-out-preferable "Primary"
+        next
+        edit "10.10.11.253"
+            set route-map-out "Out-of-SLA"
+            set route-map-out-preferable "Secondary"
+        next
+    end
+end
+
+
+config system sdwan
+config neighbor
+        edit "10.10.10.253"
+            set member 1
+            set health-check "HUB1_HC"
+            set sla-id 1
+        next
+        edit "10.10.11.253"
+            set member 2
+            set health-check "HUB1_HC"
+            set sla-id 1
+        next
+    end
+end

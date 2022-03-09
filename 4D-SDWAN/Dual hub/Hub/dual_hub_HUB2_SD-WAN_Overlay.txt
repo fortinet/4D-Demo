@@ -1,0 +1,185 @@
+config vpn ipsec phase1-interface
+    edit "VPN1"
+        set type dynamic
+        set interface "port1"
+        set ike-version 2
+        set peertype any
+        set net-device disable
+        set mode-cfg enable
+        set proposal aes256-sha256
+        set add-route disable
+        set dpd on-idle
+        set network-overlay enable
+        set network-id 4
+        set ipv4-start-ip 10.10.13.1
+        set ipv4-end-ip 10.10.13.252
+        set ipv4-netmask 255.255.255.0
+        set psksecret fortinet
+        set dpd-retryinterval 60
+    next
+    edit "VPN2"
+        set type dynamic
+        set interface "port2"
+        set ike-version 2
+        set peertype any
+        set net-device disable
+        set mode-cfg enable
+        set proposal aes256-sha256
+        set add-route disable
+        set dpd on-idle
+        set network-overlay enable
+        set network-id 5
+        set ipv4-start-ip 10.10.14.1
+        set ipv4-end-ip 10.10.14.252
+        set ipv4-netmask 255.255.255.0
+        set psksecret fortinet
+        set dpd-retryinterval 60
+    next
+end
+config vpn ipsec phase2-interface
+    edit "VPN1"
+        set phase1name "VPN1"
+        set proposal aes256-sha256
+    next
+    edit "VPN2"
+        set phase1name "VPN2"
+        set proposal aes256-sha256
+    next
+end
+
+config system interface
+edit "HUB2-Lo"
+        set vdom "root"
+        set ip 172.16.100.2 255.255.255.255
+        set allowaccess ping
+        set type loopback
+    next
+edit "VPN1"
+        set vdom "root"
+        set ip 10.10.13.253 255.255.255.255
+        set allowaccess ping
+        set remote-ip 10.10.13.254 255.255.255.0
+        set interface "port1"
+    next
+edit "VPN2"
+        set vdom "root"
+        set ip 10.10.14.253 255.255.255.255
+        set allowaccess ping
+        set remote-ip 10.10.14.254 255.255.255.0
+        set interface "port2"
+    next
+end
+
+
+
+config router bgp
+    set as 65000
+    set router-id 172.16.100.2
+    set ibgp-multipath enable
+    set graceful-restart enable
+    config neighbor
+        edit "172.16.2.1"
+            set remote-as 65100
+        next
+    end
+    config neighbor-group
+        edit "VPN1"
+            set capability-graceful-restart enable
+            set link-down-failover enable
+            set next-hop-self enable
+            set remote-as 65000
+            set route-reflector-client enable
+            set soft-reconfiguration enable
+        next
+        edit "VPN2"
+            set capability-graceful-restart enable
+            set link-down-failover enable
+            set next-hop-self enable
+            set remote-as 65000
+            set route-reflector-client enable
+            set soft-reconfiguration enable
+
+        next
+    end
+    config neighbor-range
+        edit 1
+            set prefix 10.10.13.0 255.255.255.0
+            set neighbor-group "VPN1"
+        next
+        edit 2
+            set prefix 10.10.14.0 255.255.255.0
+            set neighbor-group "VPN2"
+        next
+    end
+    config network
+        edit 1
+            set prefix 172.16.2.1 255.255.255.255
+        next
+    end  
+end
+
+config firewall address
+    edit "Datacenter"
+        set subnet 192.168.1.0 255.255.255.0
+    next
+    edit "Branch-NET" 
+        set subnet 10.1.0.0 255.255.0.0
+    next
+    edit "Overlay_Tunnels"
+        set subnet 10.10.0.0 255.255.0.0
+    next
+end
+
+config system sdwan
+    set status enable
+    config members
+        edit 1
+            set interface "VPN1"
+            set comment "Mapping for VPN1 dialup tunnels"
+        next
+        edit 2
+            set interface "VPN2"
+            set comment "Mapping for VPN2 dialup tunnels"
+        next
+    end
+end
+
+
+
+config firewall policy
+    edit 1
+        set name "SLA-HealthCheck"
+        set srcintf "virtual-wan-link"
+        set dstintf "HUB2-Lo"
+        set action accept
+        set srcaddr "Overlay_Tunnels"
+        set dstaddr "all"
+        set schedule "always"
+        set service "ALL_ICMP"
+        set logtraffic all
+    next
+    edit 2
+        set name "Branch to Datacenter"
+        set srcintf "virtual-wan-link"
+        set dstintf "port3"
+        set action accept
+        set srcaddr "Branch-NET"
+        set dstaddr "Datacenter"
+        set schedule "always"
+        set service "ALL"
+        set tcp-session-without-syn all
+        set logtraffic all
+    next
+    edit 3
+        set name "Datacenter to Branch"
+        set srcintf "port3"
+        set dstintf "virtual-wan-link"
+        set action accept
+        set srcaddr "Datacenter"
+        set dstaddr "Branch-NET"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+    next
+end
+

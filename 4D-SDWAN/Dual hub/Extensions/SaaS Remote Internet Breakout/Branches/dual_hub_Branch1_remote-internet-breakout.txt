@@ -1,0 +1,31 @@
+config application group
+    edit "Cloud_Applications" 
+        set comment 'RingCentral VoIP Application'
+        set type application
+        set application 41475
+    next
+end
+
+
+config sys sdwan
+	config service
+		edit 3
+			set name "Cloud_Applications"
+			set mode sla
+			set src "Branch-NET"
+			set internet-service enable
+			set internet-service-app-ctrl-group "Cloud_Applications"
+			config sla
+				edit "HUB1_HC"
+					set id 1
+				next
+				edit "HUB2_HC"
+					set id 1
+				next
+			end
+			set priority-members 3 4 5 6
+			set gateway enable
+		next
+		move 3 before 2
+	end
+end

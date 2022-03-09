@@ -1,0 +1,14 @@
+config firewall policy
+    edit 4
+        set name "Remote-Internet-Breakout"
+        set srcintf "virtual-wan-link"
+        set dstintf "port1"
+        set action accept
+        set srcaddr "all"
+        set dstaddr "all"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+        set nat enable
+    next
+end

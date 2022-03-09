@@ -1,0 +1,78 @@
+config firewall address
+    edit "Branch-NET" 
+        set subnet 10.1.0.0 255.255.0.0
+    next
+end
+
+config system sdwan
+    set status enable
+    config zone
+        edit "virtual-wan-link"
+        next
+        edit "SASE"
+        next
+        edit "WAN1"
+        next
+        edit "WAN2"
+        next
+    end
+    config members
+		edit 1
+			set interface "port1"
+			set zone "WAN1"
+			set comment "WAN1"
+		next
+		edit 2
+			set interface "port2"
+			set zone "WAN2"
+			set cost 10
+			set comment "WAN2"
+		next
+    end
+    config health-check
+    edit "Internet"
+            set server "1.1.1.1"
+            set failtime 3
+            set recoverytime 3
+            set update-static-route disable
+            set members 1 2
+            config sla
+                edit 1
+                    set latency-threshold 250
+                    set jitter-threshold 55
+                    set packetloss-threshold 1
+                next
+            end
+        next
+    end
+    config service
+        edit 1
+            set name "WAN1-Primary_WAN2-Backup"
+            set mode sla
+            set dst "all"
+            set src "Branch-NET"
+            config sla
+                edit "Internet"
+                    set id 1
+                next
+            end
+            set priority-members 1 2
+        next
+    end
+end
+
+
+config firewall policy
+edit 1
+        set name "Local Internet Breakout"
+        set srcintf "port3"
+        set dstintf "WAN1" "WAN2"
+        set action accept
+        set srcaddr "Branch-NET"
+        set dstaddr "all"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+        set nat enable
+    next
+end

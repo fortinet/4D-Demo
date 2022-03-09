@@ -149,3 +149,7 @@ Below illustrates the directory structure.
 			Branch_only_underlay.png
 			Readme.md
 			standalone_Branch_SD-WAN.txt
+                    Branches/
+                        dual_hub_Branch1_adaptive-fec.txt
+                        dual_hub_Branch2_adaptive-fec.txt
+						readme.md

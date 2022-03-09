@@ -1,10 +1,10 @@
 # SD-WAN single hub Saas Remote Internet Breakout - Hub
-------------
 
 This configuration is to enable SaaS Remote Internet Breakout on the hub. This allows branches to access cloud applications through the Hub.
 
+The only config necessary on the HUB is to allow overlay traffic to the internet.
+
 # Assumptions
--------------
 
 The following settings are specific to the demo and should be changed to fit your environment as necessary.
 

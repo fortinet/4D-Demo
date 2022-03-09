@@ -1,5 +1,4 @@
 # SD-WAN single hub with VPN overlay and BGP routing - HUB
-------------
 
 This configuration is for a single hub functioning as an access point for datacenter resources. As such, there is no consideration for traffic initiated from the hub.
 
@@ -10,7 +9,6 @@ The datacenter's subnet of 192.168.1.0/24 is learned through an eBGP peering wit
 The network 172.16.100.1/32 is distributed so the iBGP neighbors know of the loopback interface.
 
 # Assumptions
--------------
 
 The following settings are specific to the demo and should be changed to fit your environment as necessary.
 

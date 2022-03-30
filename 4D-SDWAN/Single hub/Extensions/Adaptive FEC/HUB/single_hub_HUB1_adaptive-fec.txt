@@ -3,7 +3,7 @@ config vpn ipsec phase1-interface
     set fec-egress enable
     set fec-ingress enable
     next
-	edit "VPN2"
+    edit "VPN2"
     set fec-egress enable
     set fec-ingress enable
     next

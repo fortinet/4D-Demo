@@ -1,0 +1,443 @@
+===============================================
+1. Configuring FortiClient EMS Fabric connector
+===============================================
+config endpoint-control fctems
+    edit "EMS-Server"
+        set server "10.88.0.1"
+        set capabilities fabric-auth silent-approval websocket websocket-malware push-ca-certs
+    next
+end
+
+Debugs:
+Verify FGT<->EMS connectivity 
+# diag endpoint fctems test-connectivity <EMS>
+
+Verify FortiClient EMS’s certificate 
+# exec fctems verify <EMS>
+
+Dump EMS connectivity info 
+# diag test application fcnacd 2
+
+Run real-time fcnacd debugs 
+# diag debug app fcnacd -1
+# diag debug enabl
+
+Debug Output:
+FortiGate-VM64-KVM # diag endpoint fctems test-connectivity EMS-Server
+Connection test was successful: 
+
+FortiGate-VM64-KVM # exec fctems verify 
+EMS-Server
+    
+
+FortiGate-VM64-KVM # exec fctems verify EMS-Server
+Server certificate already verified.
+
+FortiGate-VM64-KVM # diag test application fcnacd 2
+EMS context status:
+
+
+FortiClient EMS number 1:
+        name: EMS-Server confirmed: yes
+        fetched-serial-number: FCTEMS8821002599
+
+Websocket status: connected
+
+===============================
+2. Verify Tags are synchronized
+===============================
+ZTNA Tags and rules can be configured from FortiClient EMS under Zero Trust Tags > Zero Trust Tagging Rules.
+
+After Tags are synchronized to the FortiGate, you can view the Tags using the following:
+# diag firewall dynamic list
+# diag firewall dynamic address
+
+Debug Output:
+FortiGate-VM64-KVM # diag firewall dynamic list 
+List all dynamic addresses:
+IP dynamic addresses in VDOM root(vfid: 0):
+FCTEMS8821002599_Malicious-File-Detected: ID(9)
+Total IP dynamic range blocks: 0.
+Total IP dynamic addresses: 0. 
+
+FCTEMS8821002599_all_registered_clients: ID(15)
+        ADDR(10.0.1.2)
+        ADDR(172.16.7.3)
+Total IP dynamic range blocks: 2.
+Total IP dynamic addresses: 2. 
+
+FCTEMS_ALL_FORTICLOUD_SERVERS: ID(23)
+        ADDR(75.237.184.208)
+Total IP dynamic range blocks: 1.
+Total IP dynamic addresses: 1. 
+
+FCTEMS8821002599_Medium: ID(54)
+Total IP dynamic range blocks: 0.
+Total IP dynamic addresses: 0. 
+
+FCTEMS8821002599_High: ID(61)
+Total IP dynamic range blocks: 0.
+Total IP dynamic addresses: 0. 
+
+FCTEMS8821002599_FortiAD.Info: ID(75)
+        ADDR(10.0.1.2)
+        ADDR(172.16.7.3)
+Total IP dynamic range blocks: 2.
+Total IP dynamic addresses: 2. 
+...
+
+FortiGate-VM64-KVM # diag firewall dynamic address 
+List all dynamic addresses:
+IP dynamic addresses in VDOM root(vfid: 0):
+FCTEMS8821002599_Malicious-File-Detected: ID(9)
+Total IP dynamic range blocks: 0.
+Total IP dynamic addresses: 0. 
+
+FCTEMS8821002599_all_registered_clients: ID(15)
+        ADDR(10.0.1.2)
+        ADDR(172.16.7.3)
+Total IP dynamic range blocks: 2.
+Total IP dynamic addresses: 2. 
+
+FCTEMS_ALL_FORTICLOUD_SERVERS: ID(23)
+        ADDR(75.237.184.208)
+Total IP dynamic range blocks: 1.
+Total IP dynamic addresses: 1. 
+
+FCTEMS8821002599_Medium: ID(54)
+Total IP dynamic range blocks: 0.
+Total IP dynamic addresses: 0. 
+
+FCTEMS8821002599_High: ID(61)
+Total IP dynamic range blocks: 0.
+Total IP dynamic addresses: 0. 
+
+FCTEMS8821002599_FortiAD.Info: ID(75)
+        ADDR(10.0.1.2)
+        ADDR(172.16.7.3)
+Total IP dynamic range blocks: 2.
+Total IP dynamic addresses: 2. 
+...
+
+=========================================================================
+3. Configure a ZTNA Server to map to web servers using HTTPS access proxy
+=========================================================================
+config firewall vip
+    edit "ZTNA-webserver"
+        set type access-proxy
+        set extip 10.0.3.10
+        set extintf "port3"
+        set server-type https
+        set extport 9443
+        set ssl-certificate "ztna-wildcard"
+    next
+end
+config firewall access-proxy
+    edit "ZTNA-webserver"
+        set vip "ZTNA-webserver"
+        set client-cert enable
+        config api-gateway
+            edit 1
+                config realservers
+                    edit 1
+                        set ip 10.88.0.3
+                        set port 9443
+                    next
+                    edit 2
+                        set ip 10.88.0.4
+                        set port 9443
+                    next
+                end
+                set ldb-method round-robin
+            next
+        end
+    next
+end
+
+===============================================================
+4. Configure a ZTNA TCP forwarding access proxy for RDP and SSH
+===============================================================
+config firewall vip
+    edit "ZTNA-tcp-server"
+        set type access-proxy
+        set extip 10.0.3.11
+        set extintf "port3"
+        set server-type https
+        set extport 9443
+        set ssl-certificate "ztna-wildcard"
+    next
+end
+config firewall address
+    edit "EMS"
+        set color 21
+        set subnet 10.88.0.1 255.255.255.255
+    next
+    edit "FAZ"
+        set color 30
+        set subnet 10.88.0.2 255.255.255.255
+    next
+end
+config firewall access-proxy
+    edit "ZTNA-tcp-server"
+        set vip "ZTNA-tcp-server"
+        set client-cert enable
+        config api-gateway
+            edit 1
+                set url-map "/tcp"
+                set service tcp-forwarding
+                config realservers
+                    edit 1
+                        set address "EMS"
+                        set mappedport 3389 
+                    next
+                    edit 2
+                        set address "FAZ"
+                        set mappedport 22 
+                    next
+                end
+            next
+        end
+    next
+end
+
+=========================================================================
+5. Configure the Authentication Scheme and Policy for user authentication
+=========================================================================
+Pre-configured LDAP and User group settings:
+config user ldap
+    edit "LDAP-fortiad"
+        set server "10.88.0.1"
+        set cnid "sAMAccountName"
+        set dn "dc=fortiad,dc=info"
+        set type regular
+        set username "fortiad\\Administrator"
+        set password <password>
+    next
+end
+config user group
+    edit "LDAP-Remote-Allowed-Group"
+        set member "LDAP-fortiad"
+        config match
+            edit 1
+                set server-name "LDAP-fortiad"
+                set group-name "CN=Remote-Allowed,CN=Users,DC=fortiad,DC=info"
+            next
+        end
+    next
+end
+
+Authentication scheme and rule settings:
+config authentication scheme
+    edit "ZTNA-Auth-scheme"
+        set method basic
+        set user-database "LDAP-fortiad"
+    next
+end
+config authentication rule
+    edit "ZTNA-Auth-rule"
+        set srcintf "port3"
+        set srcaddr "all"
+        set active-auth-method "ZTNA-Auth-scheme"
+    next
+end
+
+=========================================
+6. Configure ZTNA Rules to control access
+=========================================
+config firewall proxy-policy
+    edit 1
+        set name "ZTNA-Deny-Malicious"
+        set proxy access-proxy
+        set access-proxy "ZTNA-tcp-server" "ZTNA-webserver"
+        set srcintf "port3"
+        set srcaddr "all"
+        set dstaddr "all"
+        set ztna-ems-tag "FCTEMS8821002599_Malicious-File-Detected"
+        set schedule "always"
+        set logtraffic all
+        set groups "LDAP-Remote-Allowed-Group"
+    next
+    edit 2
+        set name "ZTNA-Allow-Access"
+        set proxy access-proxy
+        set access-proxy "ZTNA-tcp-server" "ZTNA-webserver"
+        set srcintf "port3"
+        set srcaddr "all"
+        set dstaddr "all"
+        set ztna-ems-tag "FCTEMS8821002599_FortiAD.Info"
+        set action accept
+        set schedule "always"
+        set logtraffic all
+        set groups "LDAP-Remote-Allowed-Group"
+        set utm-status enable
+        set ssl-ssh-profile "certificate-inspection"
+        set av-profile "default"
+    next
+end
+
+=================================================================================================
+7. Configure ZTNA Connection Rules on FortiClient EMS for any TCP Forwarding Access Proxy traffic
+=================================================================================================
+1. On FortiClient EMS, go to Endpoint Profiles > Managed Profiles and edit the Default profile. 
+2. Enable Advanced Settings and click XML Configuration on the FortiClient feature tabs.
+3. Edit the XML config. ook for the <ztna></ztna> element. 
+4. Create rules by entering the XML configs below.
+
+	<ztna>
+		<enabled>1</enabled>
+		<rules>
+			<rule>
+				<name>RDP</name>
+				<destination>10.88.0.1:3389</destination>
+				<gateway>10.0.3.11:9443</gateway>
+				<mode>transparent</mode>
+				<local_port>0</local_port>
+				<encryption>0</encryption>
+			</rule>
+            <rule>
+                <name>ssh</name>
+				<destination>10.88.0.2:22</destination>
+				<gateway>10.0.3.11:9443</gateway>
+				<mode>transparent</mode>
+				<local_port>0</local_port>
+				<encryption>0</encryption>
+			</rule>
+		</rules>
+	</ztna>
+
+==================================
+8. Connecting to ZTNA access proxy
+==================================
+To verify endpoint connectivity:
+
+# diag endpoint record list 
+Record #1:
+                IP Address = 10.0.3.2
+                MAC Address = 02:09:0f:00:03:03
+                MAC list = 02:09:0f:00:04:03;02:09:0f:00:03:03;
+                VDOM =  (-1)
+                EMS serial number: FCTEMS8821002599
+                Client cert SN: 11065A56D99D66A02B8FEF2199ED282F8676A75E
+                Public IP address: 35.193.130.174
+                Quarantined: no
+                Online status: online
+                Registration status: registered
+                On-net status: on-net
+                Gateway Interface: 
+                FortiClient version: 7.0.2
+                AVDB version: 1.0
+                FortiClient app signature version: 20.269
+                FortiClient vulnerability scan engine version: 2.31
+                FortiClient UID: 9A016B5A6E914B42AD4168C066EB04CA
+                Host Name: WIN10-01
+                OS Type: WIN64
+                OS Version: Microsoft Windows 10 Professional Edition, 64-bit  (build 19042) (version 2009)
+                Host Description: 
+                Domain: fortiad.info
+                Last Login User: tsmith
+                Owner: 
+                Host Model: Standard PC (i440FX + PIIX, 1996)
+                Host Manufacturer: QEMU
+                CPU Model: Intel(R) Xeon(R) CPU @ 2.30GHz
+                Memory Size: 8192
+                AV Feature: 1
+                FW Feature: 1
+                WF Feature: 1
+                AS Feature: 0
+                VS Feature: 1
+                VN Feature: 1
+                Last vul message received time: N/A
+                Last vul scanned time: N/A
+                Last vul statistic: critical=0, high=0, medium=0, low=0, info=0
+                Avatar fingerprint: 05b9940c015425a375caafa28096d695be6e9ad2
+                Avatar source username: Tom Smith
+                Avatar source email: tsmith@ztnademo.com
+                Avatar source: OS
+                Phone number: 512-555-1212
+                Number of Routes: (0)
+online records: 1; offline records: 0; quarantined records: 0
+
+# diag test application fcnacd 7
+
+ZTNA Cache V2:
+Entry #1:
+
+ - UID: 9A016B5A6E914B42AD4168C066EB04CA
+ - EMS SN: FCTEMS8821002599
+ - Domain: fortiad.info
+ - User: tsmith
+ - Owner: 
+ - Certificate SN: 11065A56D99D66A02B8FEF2199ED282F8676A75E
+ - online: true
+ - Tags (3):
+  -- Tag (#0): Low
+  -- Tag (#1): all_registered_clients
+  -- Tag (#2): FortiAD.Info
+lls_idx_mask = 0x00000001, 
+
+# exec log filter category 0
+# exec log filter field subtype ztna
+# exec log display
+4 logs found.
+4 logs returned.
+
+1: date=2022-03-04 time=16:08:27 eventtime=1646438907754697037 tz="-0800" logid="0005000024" type="traffic" subtype="ztna" level="notice" vd="root" srcip=10.0.3.2 srcport=56198 srcintf="port3" srcintfrole="wan" dstcountry="Reserved" srccountry="Reserved" dstip=10.88.0.3 dstport=9443 dstintf="root" dstintfrole="undefined" sessionid=113891 service="tcp/9443" proto=6 action="accept" policyid=2 policytype="proxy-policy" poluuid="b64e29d6-9b94-51ec-dcf2-a960b7f68517" policyname="ZTNA-Allow-Access" duration=125 user="tsmith" group="LDAP-Remote-Allowed-Group" authserver="LDAP-fortiad" gatewayid=1 vip="ZTNA-webserver" accessproxy="ZTNA-webserver" clientdeviceid="9A016B5A6E914B42AD4168C066EB04CA" clientdevicetags="MAC_FCTEMS8821002599_FortiAD.Info/FCTEMS8821002599_all_registered_clients/MAC_FCTEMS8821002599_all_registered_clients" wanin=190472 rcvdbyte=190472 wanout=1304 lanin=1545 sentbyte=1545 lanout=189089 fctuid="9A016B5A6E914B42AD4168C066EB04CA" appcat="unscanned"
+
+2: date=2022-03-04 time=16:05:15 eventtime=1646438715737239222 tz="-0800" logid="0005000024" type="traffic" subtype="ztna" level="notice" vd="root" srcip=10.0.3.2 srcport=56194 srcintf="port3" srcintfrole="wan" dstcountry="Reserved" srccountry="Reserved" dstip=10.88.0.4 dstport=9443 dstintf="root" dstintfrole="undefined" sessionid=113562 service="tcp/9443" proto=6 action="accept" policyid=2 policytype="proxy-policy" poluuid="b64e29d6-9b94-51ec-dcf2-a960b7f68517" policyname="ZTNA-Allow-Access" duration=128 user="tsmith" group="LDAP-Remote-Allowed-Group" authserver="LDAP-fortiad" gatewayid=1 vip="ZTNA-webserver" accessproxy="ZTNA-webserver" clientdeviceid="9A016B5A6E914B42AD4168C066EB04CA" clientdevicetags="MAC_FCTEMS8821002599_FortiAD.Info/FCTEMS8821002599_all_registered_clients/MAC_FCTEMS8821002599_all_registered_clients" wanin=46718 rcvdbyte=46718 wanout=1795 lanin=2072 sentbyte=2072 lanout=45445 fctuid="9A016B5A6E914B42AD4168C066EB04CA" appcat="unscanned"
+
+3: date=2022-03-04 time=16:05:10 eventtime=1646438710727478489 tz="-0800" logid="0005000024" type="traffic" subtype="ztna" level="notice" vd="root" srcip=10.0.3.2 srcport=56186 srcintf="port3" srcintfrole="wan" dstcountry="Reserved" srccountry="Reserved" dstip=10.88.0.4 dstport=9443 dstintf="root" dstintfrole="undefined" sessionid=113256 service="tcp/9443" proto=6 action="accept" policyid=2 policytype="proxy-policy" poluuid="b64e29d6-9b94-51ec-dcf2-a960b7f68517" policyname="ZTNA-Allow-Access" duration=300 user="tsmith" group="LDAP-Remote-Allowed-Group" authserver="LDAP-fortiad" gatewayid=1 vip="ZTNA-webserver" accessproxy="ZTNA-webserver" clientdeviceid="9A016B5A6E914B42AD4168C066EB04CA" clientdevicetags="MAC_FCTEMS8821002599_FortiAD.Info/FCTEMS8821002599_all_registered_clients/MAC_FCTEMS8821002599_all_registered_clients" wanin=220935 rcvdbyte=220935 wanout=1881 lanin=3894 sentbyte=3894 lanout=227041 fctuid="9A016B5A6E914B42AD4168C066EB04CA" appcat="unscanned"
+
+4: date=2022-03-04 time=16:05:10 eventtime=1646438710727229866 tz="-0800" logid="0005000024" type="traffic" subtype="ztna" level="notice" vd="root" srcip=10.0.3.2 srcport=56193 srcintf="port3" srcintfrole="wan" dstcountry="Reserved" srccountry="Reserved" dstip=10.88.0.3 dstport=9443 dstintf="root" dstintfrole="undefined" sessionid=113558 service="tcp/9443" proto=6 action="accept" policyid=2 policytype="proxy-policy" poluuid="b64e29d6-9b94-51ec-dcf2-a960b7f68517" policyname="ZTNA-Allow-Access" duration=125 user="tsmith" group="LDAP-Remote-Allowed-Group" authserver="LDAP-fortiad" gatewayid=1 vip="ZTNA-webserver" accessproxy="ZTNA-webserver" clientdeviceid="9A016B5A6E914B42AD4168C066EB04CA" clientdevicetags="MAC_FCTEMS8821002599_FortiAD.Info/FCTEMS8821002599_all_registered_clients/MAC_FCTEMS8821002599_all_registered_clients" wanin=39071 rcvdbyte=39071 wanout=1145 lanin=1386 sentbyte=1386 lanout=37751 fctuid="9A016B5A6E914B42AD4168C066EB04CA" appcat="unscanned"
+
+# diag wad user list
+
+ID: 2, VDOM: root, IPv4: 10.0.3.2
+  user name   : tsmith
+  worker      : 0
+  duration    : 372
+  auth_type   : IP
+  auth_method : Basic
+  pol_id      : 2
+  g_id        : 3
+  user_based  : 0
+  expire      : no
+  LAN:
+    bytes_in=79557 bytes_out=463555
+  WAN:
+    bytes_in=432893 bytes_out=64777
+
+# diag firewall auth list 
+
+10.0.3.2, tsmith
+        type: fw, id: 0, duration: 549, idled: 39
+        expire: 561, allow-idle: 600
+        packets: in 81 out 90, bytes: in 53406 out 29933
+        group_id: 3
+        group_name: LDAP-Remote-Allowed-Group
+
+----- 1 listed, 0 filtered ------
+
+
+RDP connection:
+
+# exec log display
+5 logs found.
+5 logs returned.
+
+1: date=2022-03-04 time=17:10:37 eventtime=1646442637669726761 tz="-0800" logid="0005000024" type="traffic" subtype="ztna" level="notice" vd="root" srcip=10.0.3.2 srcport=56301 srcintf="port3" srcintfrole="wan" dstcountry="Reserved" srccountry="Reserved" dstip=10.88.0.1 dstport=3389 dstintf="root" dstintfrole="undefined" sessionid=120190 service="RDP" proto=6 action="accept" policyid=2 policytype="proxy-policy" poluuid="b64e29d6-9b94-51ec-dcf2-a960b7f68517" policyname="ZTNA-Allow-Access" duration=16 user="tsmith" group="LDAP-Remote-Allowed-Group" authserver="LDAP-fortiad" gatewayid=1 vip="ZTNA-tcp-server" accessproxy="ZTNA-tcp-server" clientdeviceid="9A016B5A6E914B42AD4168C066EB04CA" clientdevicetags="MAC_FCTEMS8821002599_FortiAD.Info/FCTEMS8821002599_all_registered_clients/MAC_FCTEMS8821002599_all_registered_clients" wanin=1588 rcvdbyte=1588 wanout=1040 lanin=2854 sentbyte=2854 lanout=5105 fctuid="9A016B5A6E914B42AD4168C066EB04CA" appcat="unscanned"
+
+SSH connection:
+
+# exec log display
+8 logs found.
+8 logs returned.
+
+2: date=2022-03-04 time=17:27:41 eventtime=1646443661553613902 tz="-0800" logid="0005000024" type="traffic" subtype="ztna" level="notice" vd="root" srcip=10.0.3.2 srcport=56329 srcintf="port3" srcintfrole="wan" dstcountry="Reserved" srccountry="Reserved" dstip=10.88.0.2 dstport=22 dstintf="root" dstintfrole="undefined" sessionid=121810 service="SSH" proto=6 action="accept" policyid=2 policytype="proxy-policy" poluuid="b64e29d6-9b94-51ec-dcf2-a960b7f68517" policyname="ZTNA-Allow-Access" duration=18 user="tsmith" group="LDAP-Remote-Allowed-Group" authserver="LDAP-fortiad" gatewayid=1 vip="ZTNA-tcp-server" accessproxy="ZTNA-tcp-server" clientdeviceid="9A016B5A6E914B42AD4168C066EB04CA" clientdevicetags="MAC_FCTEMS8821002599_FortiAD.Info/FCTEMS8821002599_all_registered_clients/MAC_FCTEMS8821002599_all_registered_clients" wanin=1837 rcvdbyte=1837 wanout=1761 lanin=3597 sentbyte=3597 lanout=5376 fctuid="9A016B5A6E914B42AD4168C066EB04CA" appcat="unscanned"
+
+
+Denied traffic due to ZTNA tag:
+# exec log display
+10 logs found.
+10 logs returned.
+
+1: date=2022-03-04 time=17:50:49 eventtime=1646445050030746165 tz="-0800" logid="0005000024" type="traffic" subtype="ztna" level="notice" vd="root" srcip=10.0.3.2 srcport=56368 srcintf="port3" srcintfrole="wan" dstcountry="Reserved" srccountry="Reserved" dstip=10.0.3.10 dstport=9443 dstintf="root" dstintfrole="undefined" sessionid=123985 service="tcp/9443" proto=6 action="deny" policyid=1 policytype="proxy-policy" poluuid="74fa4e06-9b94-51ec-7141-990cff1cfee0" policyname="ZTNA-Deny-Malicious" duration=1 user="tsmith" group="LDAP-Remote-Allowed-Group" authserver="LDAP-fortiad" gatewayid=1 vip="ZTNA-webserver" accessproxy="ZTNA-webserver" clientdeviceid="9A016B5A6E914B42AD4168C066EB04CA" clientdevicetags="MAC_FCTEMS8821002599_FortiAD.Info/MAC_FCTEMS8821002599_Malicious-File-Detected/FCTEMS8821002599_all_registered_clients" msg="Denied: proxy-policy action is deny" wanin=0 rcvdbyte=0 wanout=0 lanin=1545 sentbyte=1545 lanout=528 fctuid="9A016B5A6E914B42AD4168C066EB04CA" appcat="unscanned" crscore=30 craction=131072 crlevel="high"

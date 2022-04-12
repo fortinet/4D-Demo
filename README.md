@@ -5,7 +5,7 @@
 - [SD-WAN](https://github.com/fortinet/4D-Demo/tree/main/4D-SDWAN)
 - Wireless (Coming)
 - Switching (Coming)
-- ZTNA (Coming)
+- [ZTNA](https://github.com/fortinet/4D-Demo/tree/main/4D-ZTNA)
 
 # Overview
 

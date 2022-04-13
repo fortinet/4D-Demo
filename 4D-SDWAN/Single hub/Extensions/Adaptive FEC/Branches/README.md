@@ -16,11 +16,9 @@ For more details on adaptive FEC, please see the [Adaptive Forward Error Correct
 
 The following settings are specific to the demo and should be changed to fit your environment as necessary.
 
-1) The ADVPN configuration requires single_hub_branch[1|2]_SD-WAN_Overlay.txt to be configured on the branch.
+1) A custom application service is defined as udp port 5000. This should be adjusted to meet your business' needs.
 
-2) A custom application service is defined as udp port 5000. This should be adjusted to meet your business' needs.
-
-3) Thresholds and settings for FEC should be tuned to the application and business needs. In this configuration, FEC parity bits were adjusted to be more aggressive during higher packet loss situations than the defaults.
+2) Thresholds and settings for FEC should be tuned to the application and business needs. In this configuration, FEC parity bits were adjusted to be more aggressive during higher packet loss situations than the defaults.
 
 
 # Changes between branches

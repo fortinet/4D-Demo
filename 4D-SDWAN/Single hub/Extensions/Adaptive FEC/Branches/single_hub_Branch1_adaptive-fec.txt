@@ -1,5 +1,5 @@
 config firewall service custom
-edit "CustomApp-5000"
+    edit "CustomApp-5000"
         set udp-portrange 5000
     next
 end

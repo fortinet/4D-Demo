@@ -2,7 +2,7 @@
 
 This configuration is to enable BGP route steering on a branch. As SD-WAN intelligence affects which WAN interface is used, BGP can be leveraged to communicate these decisions to it's neighbors.
 
-The hub health check will be monitored the performance of our datacenter overlay. If an SLA fails or does not meet its minimum requirements, it will trigger its BGP neighbor to send a different route map. 
+The hub health check will monitor the performance of our datacenter overlay. If an SLA fails or does not meet its minimum requirements, it will trigger its BGP neighbor to send a different route map. 
 
 Under normal conditions (SLA are passing), the 'routemap-out-preferable' will be sent out to the HUB BGP neighbor. This routemap is our preferred routemap that matches our LAN addresses with a specified community # (in this example 1 for VPN 1 interfaces or 2 for VPN 2 interfaces). 
 

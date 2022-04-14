@@ -22,32 +22,33 @@ config firewall policy
 end
 
 config vpn ipsec fec
-edit "dc_fec"
-config mappings
-edit 1
-set base 8
-set redundant 2
-set packet-loss-threshold 5
-next
-edit 2
-set base 5
-set redundant 2
-set packet-loss-threshold 10
-next
-end
+    edit "dc_fec"
+        config mappings
+            edit 1
+                set base 8
+                set redundant 2
+                set packet-loss-threshold 5
+            next
+            edit 2
+                set base 5
+                set redundant 2
+                set packet-loss-threshold 10
+            next
+        end
+    next
 end
 
 config vpn ipsec phase1-interface 
     edit "HUB1-VPN1"
-      set fec-egress enable
-      set fec-ingress enable
-      set fec-mapping-profile dc_fec
-      set fec-health-check HUB1_HC
+        set fec-egress enable
+        set fec-ingress enable
+        set fec-mapping-profile dc_fec
+        set fec-health-check HUB1_HC
     next
     edit "HUB1-VPN2"
-      set fec-egress enable
-      set fec-ingress enable
-      set fec-mapping-profile dc_fec
-      set fec-health-check HUB1_HC
+        set fec-egress enable
+        set fec-ingress enable
+        set fec-mapping-profile dc_fec
+        set fec-health-check HUB1_HC
     next
 end

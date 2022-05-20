@@ -282,7 +282,6 @@ config router bgp
 	    	set soft-reconfiguration enable
         next
     end
-    end
     config network
         edit 1
             set prefix 10.1.3.0 255.255.255.0

@@ -2,7 +2,7 @@ config firewall address
     edit "Branch-NET"
         set subnet 10.1.0.0 255.255.0.0
     next
-	edit "Datacenter"
+    edit "Datacenter"
         set subnet 192.168.1.0 255.255.255.0
     next
 end
@@ -18,25 +18,25 @@ config system sdwan
         next
         edit "WAN2"
         next
-		edit "HUB1"
-		next
-		edit "HUB2"
-		next
+        edit "HUB1"
+        next
+        edit "HUB2"
+        next
     end
     config members
-    edit 1
+        edit 1
             set interface "port1"
             set zone "WAN1"
             set comment "WAN1"
         next
-    edit 2
+        edit 2
             set interface "port2"
             set zone "WAN2"
             set cost 10
             set comment "WAN2"
         next
-	edit 3
-			set interface "HUB1-VPN1"
+        edit 3
+            set interface "HUB1-VPN1"
             set zone "HUB1"
             set comment "Mapping to HUB1 through WAN1"
         next
@@ -46,21 +46,21 @@ config system sdwan
             set cost 10
             set comment "Mapping to HUB1 through WAN2. Cost 10 since less preferred"
         next
-		edit 5
-			set interface "HUB2-VPN1"
-			set zone "HUB2"
-			set cost 20
-			set comment "Mapping to HUB2 through WAN1"
-		next
-		edit 6
-			set interface "HUB2-VPN2"
-			set zone "HUB2"
-			set cost 30
-			set comment "Mapping to HUB2 through WAN2"
-		next
+        edit 5
+            set interface "HUB2-VPN1"
+            set zone "HUB2"
+            set cost 20
+            set comment "Mapping to HUB2 through WAN1"
+        next
+        edit 6
+            set interface "HUB2-VPN2"
+            set zone "HUB2"
+            set cost 30
+            set comment "Mapping to HUB2 through WAN2"
+        next
     end
     config health-check
-    edit "Internet"
+        edit "Internet"
             set server "1.1.1.1"
             set failtime 3
             set recoverytime 3
@@ -74,7 +74,7 @@ config system sdwan
                 next
             end
         next
-	edit "HUB1_HC"
+        edit "HUB1_HC"
             set server "172.16.100.1"
             set failtime 3
             set update-static-route disable
@@ -89,18 +89,18 @@ config system sdwan
         next
     end
     config service
-		edit 2
-			set name "Branch_to_DC1"
+        edit 2
+            set name "Branch_to_DC1"
             set mode sla
             set dst "Datacenter" 
             set src "Branch-NET"
             config sla
                 edit "HUB1_HC"
                     set id 1
-				next
-				edit "HUB2_HC"
-					set id 1
-				next
+                next
+                edit "HUB2_HC"
+                    set id 1
+                next
             end
             set priority-members 3 4 5 6
         next
@@ -121,7 +121,7 @@ end
 
 
 config firewall policy
-edit 1
+    edit 1
         set name "Local Internet Breakout"
         set srcintf "port3"
         set dstintf "WAN1" "WAN2"
@@ -133,7 +133,7 @@ edit 1
         set logtraffic all
         set nat enable
     next
-edit 2
+    edit 2
         set name "Branch to Datacenter"
         set srcintf "port3"
         set dstintf "HUB1" "HUB2"
@@ -147,7 +147,7 @@ edit 2
 end
 
 config vpn ipsec phase1-interface
-	edit "HUB1-VPN1"
+    edit "HUB1-VPN1"
         set interface "port1"
         set ike-version 2
         set peertype any
@@ -161,7 +161,7 @@ config vpn ipsec phase1-interface
         set remote-gw 10.198.5.2
         set psksecret fortinet
     next
-     edit "HUB1-VPN2"
+    edit "HUB1-VPN2"
         set interface "port2"
         set ike-version 2
         set peertype any
@@ -175,7 +175,7 @@ config vpn ipsec phase1-interface
         set remote-gw 10.198.6.2
         set psksecret fortinet
     next
-	edit "HUB2-VPN1"
+    edit "HUB2-VPN1"
         set interface "port1"
         set ike-version 2
         set peertype any
@@ -189,7 +189,7 @@ config vpn ipsec phase1-interface
         set remote-gw 10.198.7.2
         set psksecret fortinet
     next
-     edit "HUB2-VPN2"
+    edit "HUB2-VPN2"
         set interface "port2"
         set ike-version 2
         set peertype any
@@ -228,13 +228,14 @@ config vpn ipsec phase2-interface
 end
 
 config system interface
-edit "Spoke-Lo"
+    edit "Spoke-Lo"
         set ip 172.16.200.3 255.255.255.255
         set allowaccess ping
         set type loopback
         set vdom "root"
     next
 end
+
 config router bgp
     set as 65000
     set router-id 172.16.200.3
@@ -246,46 +247,46 @@ config router bgp
             set capability-graceful-restart enable
             set link-down-failover enable
             set remote-as 65000
-	    	set interface "HUB1-VPN1"
-	    	set description "HUB1-VPN1"
+            set interface "HUB1-VPN1"
+            set description "HUB1-VPN1"
             set connect-timer 10
-	    	set soft-reconfiguration enable
+            set soft-reconfiguration enable
         next
         edit "10.10.11.253"
             set advertisement-interval 1
             set capability-graceful-restart enable
             set link-down-failover enable
             set remote-as 65000
-	    	set interface "HUB1-VPN2"
-	    	set description "HUB1-VPN2"
+            set interface "HUB1-VPN2"
+            set description "HUB1-VPN2"
             set connect-timer 10
-	    	set soft-reconfiguration enable
+            set soft-reconfiguration enable
         next
         edit "10.10.13.253"
             set advertisement-interval 1
             set capability-graceful-restart enable
             set link-down-failover enable
             set remote-as 65000
-			set interface "HUB2-VPN1"
-			set description "HUB2-VPN1"
+            set interface "HUB2-VPN1"
+            set description "HUB2-VPN1"
             set connect-timer 10
-	    	set soft-reconfiguration enable
+            set soft-reconfiguration enable
         next
         edit "10.10.14.253"
             set advertisement-interval 1
             set capability-graceful-restart enable
             set link-down-failover enable
             set remote-as 65000
-	    	set interface "HUB2-VPN2"
-	    	set description "HUB2-VPN2"
+            set interface "HUB2-VPN2"
+            set description "HUB2-VPN2"
             set connect-timer 10
-	    	set soft-reconfiguration enable
+            set soft-reconfiguration enable
         next
     end
-    end
-    config network
-        edit 1
-            set prefix 10.1.3.0 255.255.255.0
-        next
-    end
+end
+    
+config network
+    edit 1
+        set prefix 10.1.3.0 255.255.255.0
+    next
 end

@@ -12,14 +12,14 @@ For further details on SD-WAN features and deployment methods, such as using For
 
 *Standalone SD-WAN* contains configuration for a branch with no central hub which. This configuration does not integrate with any other files in this repository.
 
-Single Hub and Dual hub both have a base configuration for the Hub(s) and Branches. These config files listed below are the base configuration which more advanced features (extensions) may be added to.
+*Single Hub* and *Dual Hub* both have a base configuration for the Hub(s) and Branches. These config files listed below are the base configuration which more advanced features (extensions) may be added to.
 
 ## Single Hub:
 - single_hub_HUB1_SD-WAN_Overlay.txt
 - single_hub_Branch1_SD-WAN_Overlay.txt
 - single_hub_Branch2_SD-WAN_Overlay.txt
 
-## Dual Hub
+## Dual Hub:
 - dual_hub_HUB1_SD-WAN_Overlay.txt
 - dual_hub_HUB2_SD-WAN_Overlay.txt
 - dual_hub_Branch1_SD-WAN_and_Overlay.txt

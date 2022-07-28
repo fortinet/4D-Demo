@@ -1,0 +1,662 @@
+config system interface
+    edit "wan1"
+        set vdom "root"
+        set mode dhcp
+        set allowaccess ping
+        set type physical
+        set role wan
+        set snmp-index 1
+    next
+    edit "wan2"
+        set vdom "root"
+        set mode dhcp
+        set allowaccess ping
+        set type physical
+        set role wan
+        set snmp-index 2
+    next
+    edit "a"
+        set vdom "root"
+        set type physical
+        set snmp-index 3
+    next
+    edit "b"
+        set vdom "root"
+        set type physical
+        set snmp-index 4
+    next
+    edit "fortilink"
+        set vdom "root"
+        set fortilink enable
+        set ip 11.255.1.1 255.255.255.0
+        set allowaccess ping fabric
+        set type aggregate
+        set member "a" "b"
+        set lldp-reception enable
+        set lldp-transmission enable
+        set snmp-index 5
+        set auto-auth-extension-device enable
+        set fortilink-split-interface disable
+        set switch-controller-nac "fortilink"
+        set switch-controller-dynamic "fortilink"
+        set swc-first-create 255
+    next
+    edit "POS"
+        set vdom "root"
+        set ip 10.0.1.225 255.255.255.240
+        set device-identification enable
+        set role lan
+        set snmp-index 6
+        set color 6
+        set interface "fortilink"
+        set vlanid 100
+    next
+    edit "Security_Camera"
+        set vdom "root"
+        set ip 10.0.1.193 255.255.255.224
+        set device-identification enable
+        set role lan
+        set snmp-index 7
+        set color 10
+        set interface "fortilink"
+        set vlanid 200
+    next
+    edit "Staff"
+        set vdom "root"
+        set ip 10.0.1.129 255.255.255.192
+        set allowaccess fabric
+        set device-identification enable
+        set role lan
+        set snmp-index 8
+        set color 30
+        set interface "fortilink"
+        set vlanid 400
+    next
+    edit "Voice"
+        set vdom "root"
+        set ip 10.0.1.241 255.255.255.240
+        set device-identification enable
+        set role lan
+        set snmp-index 9
+        set color 21
+        set interface "fortilink"
+        set vlanid 500
+    next
+    edit "Guest_WIFI"
+        set vdom "root"
+        set ip 10.111.0.1 255.255.255.0
+        set type vap-switch
+        set device-identification enable
+        set role lan
+        set snmp-index 10
+    next
+    edit "wqtn.24.Guest_W"
+        set vdom "root"
+        set description "Quarantine VLAN"
+        set security-mode captive-portal
+        set device-identification enable
+        set snmp-index 11
+        set color 6
+        set interface "Guest_WIFI"
+        set vlanid 4093
+    next
+    edit "wqt.root"
+        set vdom "root"
+        set ip 10.253.255.254 255.255.240.0
+        set type switch
+        set description "Quarantine Soft Switch"
+        set security-mode captive-portal
+        set replacemsg-override-group "auth-intf-wqt.root"
+        set device-identification enable
+        set snmp-index 12
+    next
+    edit "AP_MGMT"
+        set vdom "root"
+        set ip 10.190.190.1 255.255.255.0
+        set allowaccess fabric
+        set device-identification enable
+        set role lan
+        set snmp-index 13
+        set auto-auth-extension-device enable
+        set interface "fortilink"
+        set vlanid 11
+    next
+    edit "Staff_WIFI"
+        set vdom "root"
+        set ip 10.0.1.1 255.255.255.128
+        set type vap-switch
+        set device-identification enable
+        set role lan
+        set snmp-index 14
+    next
+    edit "wqtn.28.Staff_W"
+        set vdom "root"
+        set description "Quarantine VLAN"
+        set security-mode captive-portal
+        set device-identification enable
+        set snmp-index 15
+        set color 6
+        set interface "Staff_WIFI"
+        set vlanid 4093
+    next
+    edit "WAN1-VPN"
+        set vdom "root"
+        set allowaccess ping
+        set type tunnel
+        set snmp-index 16
+        set interface "wan1"
+    next
+    edit "WAN2-VPN"
+        set vdom "root"
+        set allowaccess ping
+        set type tunnel
+        set snmp-index 17
+        set interface "wan2"
+    next
+end
+config wireless-controller vap
+    edit "Guest_WIFI"
+        set ssid "ACME Guest"
+        set passphrase fortinet
+        set schedule "always"
+        set beacon-advertising name
+    next
+    edit "Staff_WIFI"
+        set ssid "ACME Staff"
+        set passphrase fortinet
+        set schedule "always"
+        set beacon-advertising name
+    next
+end
+config system dhcp server
+    edit 0
+        set dns-service local
+        set ntp-service local
+        set default-gateway 11.255.1.1
+        set netmask 255.255.255.0
+        set interface "fortilink"
+        config ip-range
+            edit 1
+                set start-ip 11.255.1.2
+                set end-ip 11.255.1.254
+            next
+        end
+        set vci-match enable
+        set vci-string "FortiSwitch" "FortiExtender"
+    next
+    edit 0
+        set dns-service default
+        set default-gateway 10.0.1.225
+        set netmask 255.255.255.240
+        set interface "POS"
+        config ip-range
+            edit 1
+                set start-ip 10.0.1.226
+                set end-ip 10.0.1.238
+            next
+        end
+    next
+    edit 0
+        set dns-service default
+        set default-gateway 10.0.1.193
+        set netmask 255.255.255.224
+        set interface "Security_Camera"
+        config ip-range
+            edit 1
+                set start-ip 10.0.1.194
+                set end-ip 10.0.1.222
+            next
+        end
+    next
+    edit 0
+        set dns-service default
+        set default-gateway 10.0.1.129
+        set netmask 255.255.255.192
+        set interface "Staff"
+        config ip-range
+            edit 1
+                set start-ip 10.0.1.130
+                set end-ip 10.0.1.190
+            next
+        end
+    next
+    edit 0
+        set dns-service default
+        set default-gateway 10.0.1.241
+        set netmask 255.255.255.240
+        set interface "Voice"
+        config ip-range
+            edit 1
+                set start-ip 10.0.1.242
+                set end-ip 10.0.1.254
+            next
+        end
+    next
+    edit 0
+        set dns-service default
+        set default-gateway 10.111.0.1
+        set netmask 255.255.255.0
+        set interface "Guest_WIFI"
+        config ip-range
+            edit 1
+                set start-ip 10.111.0.2
+                set end-ip 10.111.0.254
+            next
+        end
+    next
+    edit 0
+        set dns-service default
+        set default-gateway 10.190.190.1
+        set netmask 255.255.255.0
+        set interface "AP_MGMT"
+        config ip-range
+            edit 1
+                set start-ip 10.190.190.2
+                set end-ip 10.190.190.254
+            next
+        end
+    next
+    edit 0
+        set dns-service default
+        set default-gateway 10.0.1.1
+        set netmask 255.255.255.128
+        set interface "Staff_WIFI"
+        config ip-range
+            edit 1
+                set start-ip 10.0.1.2
+                set end-ip 10.0.1.127
+            next
+        end
+    next
+end
+config system zone
+    edit "Staff_zone"
+        set interface "Staff" "Voice" "Staff_WIFI"
+    next
+end
+config firewall address
+    edit "POS address"
+        set type interface-subnet
+        set subnet 10.0.1.225 255.255.255.240
+        set interface "POS"
+    next
+    edit "Security_Camera address"
+        set type interface-subnet
+        set subnet 10.0.1.193 255.255.255.224
+        set interface "Security_Camera"
+    next
+    edit "Staff address"
+        set type interface-subnet
+        set subnet 10.0.1.129 255.255.255.192
+        set interface "Staff"
+    next
+    edit "Voice address"
+        set type interface-subnet
+        set subnet 10.0.1.241 255.255.255.240
+        set interface "Voice"
+    next
+    edit "Guest_WIFI address"
+        set type interface-subnet
+        set subnet 10.111.0.1 255.255.255.0
+        set interface "Guest_WIFI"
+    next
+    edit "AP_MGMT address"
+        set type interface-subnet
+        set subnet 10.190.190.1 255.255.255.0
+        set interface "AP_MGMT"
+    next
+    edit "Staff_WIFI address"
+        set type interface-subnet
+        set subnet 10.0.1.1 255.255.255.128
+        set interface "Staff_WIFI"
+    next
+    edit "Branch_LAN"
+        set subnet 10.0.1.0 255.255.255.0
+    next
+    edit "HQ_LAN"
+        set subnet 10.0.0.0 255.0.0.0
+    next
+    edit "RFC-1918-10"
+        set subnet 10.0.0.0 255.0.0.0
+    next
+    edit "RFC-1918-192"
+        set subnet 192.168.0.0 255.255.0.0
+    next
+    edit "RFC-1918-172"
+        set subnet 172.16.0.0 255.240.0.0
+    next
+end
+config firewall addrgrp
+    edit RFC-1918
+        set member "RFC-1918-10" "RFC-1918-172" "RFC-1918-192"
+    next
+end
+config system sdwan
+    set status enable
+    config zone
+        edit "virtual-wan-link"
+        next
+        edit "WAN1"
+        next
+        edit "WAN2"
+        next
+        edit "WAN1_VPN"
+        next
+        edit "WAN2_VPN"
+        next
+    end
+    config members
+        edit 1
+            set interface "wan1"
+            set zone "WAN1"
+        next
+        edit 2
+            set interface "wan2"
+            set zone "WAN2"
+        edit 3
+            set interface "WAN1-VPN"
+            set zone "WAN1_VPN"
+        next 4
+            set interface "WAN2-VPN"
+            set zone "WAN2_VPN"
+            set cost 10
+        next
+    end
+    config health-check
+        edit "HQ_VPN"
+            set server "10.1.0.1"
+            set failtime 3
+            set recoverytime 3
+            set members 3 4
+            config sla
+                edit 1
+                    set latency-threshold 100
+                    set jitter-threshold 25
+                    set packetloss-threshold 1
+                next
+            end
+        next
+        edit "Internet"
+            set server "1.1.1.1"
+            set failtime 3
+            set recoverytime 3
+            set members 1 2
+            config sla
+                edit 1
+                    set latency-threshold 250
+                    set jitter-threshold 55
+                    set packetloss-threshold 1
+                next
+            end
+        next
+    end
+    config service
+        edit 2
+            set name "Branch_to_HQ"
+            set mode sla
+            set dst "HQ_LAN"
+            set src "Branch_LAN"
+            config sla
+                edit "HQ_VPN"
+                    set id 1
+                next
+            end
+            set priority-members 3 4
+        next
+        edit 4
+            set name "Business_Internet"
+            set mode priority
+            set src "Branch_LAN"
+            set internet-service enable
+            set internet-service-app-ctrl-group "Critical_Apps"
+            set health-check "Internet"
+            set priority-members 1 2
+        next
+        edit 3
+            set name "Non-Business_Internet"
+            set dst "RFC-1918"
+            set dst-negate enable
+            set src "Branch_LAN"
+            set priority-members 2
+        next
+    end
+end
+config vpn ipsec phase1-interface
+    edit "WAN1-VPN"
+        set interface "port2"
+        set ike-version 2
+        set peertype any
+        set net-device enable
+        set mode-cfg enable
+        set proposal aes128-sha256
+        set add-route disable
+        set localid "Branch1"
+        set auto-discovery-receiver enable
+        set remote-gw 203.0.113.1
+        set psksecret fortinet
+    next
+    edit "WAN2-VPN"
+        set interface "port3"
+        set ike-version 2
+        set peertype any
+        set net-device enable
+        set mode-cfg enable
+        set proposal aes128-sha256
+        set add-route disable
+        set localid "Branch1"
+        set auto-discovery-receiver enable
+        set remote-gw 198.51.100.1
+        set psksecret fortinet
+    next
+end
+config vpn ipsec phase2-interface
+    edit "WAN1-VPN"
+        set phase1name "WAN1-VPN"
+        set proposal aes128-sha1
+    next
+    edit "WAN2-VPN"
+        set phase1name "WAN2-VPN"
+        set proposal aes128-sha1
+    next
+end
+config firewall policy
+    edit 1
+        set name "Branch_to_HQ"
+        set srcintf "Staff_zone"
+        set dstintf "WAN1_VPN" "WAN2_VPN"
+        set action accept
+        set srcaddr "Branch_LAN"
+        set dstaddr "HQ_LAN"
+        set schedule "always"
+        set service "ALL"
+        set nat enable
+    next
+    edit 2
+        set name "HQ_to_Branch"
+        set srcintf "WAN1_VPN" "WAN2_VPN"
+        set dstintf "Staff_zone"
+        set action accept
+        set srcaddr "HQ_LAN"
+        set dstaddr "Branch_LAN"
+        set schedule "always"
+        set service "ALL"
+        set nat enable
+    next
+    edit 3
+        set name "Branch_to_Internet"
+        set srcintf "Staff_zone"
+        set dstintf "WAN1" "WAN2"
+        set action accept
+        set srcaddr "Branch_LAN"
+        set dstaddr "all"
+        set schedule "always"
+        set service "ALL"
+        set nat enable
+    next
+    edit 4
+        set name "Guest_internet_access"
+        set srcintf "Guest_WIFI"
+        set dstintf "WAN2"
+        set action accept
+        set srcaddr "Guest_WIFI address"
+        set dstaddr "all"
+        set schedule "always"
+        set service "ALL"
+        set nat enable
+    next
+end
+config switch-controller managed-switch
+    edit "S108EP0000000000"
+        set fsw-wan1-peer "fortilink"
+        set fsw-wan1-admin enable
+        set poe-detection-type 1
+        set version 1
+        set max-allowed-trunk-members 8
+        set dynamic-capability 0x00000000000000000000067594c2b9d7
+        config ports
+            edit "port1"
+                set speed-mask 207
+                set poe-capable 1
+                set vlan "Staff"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port2"
+                set speed-mask 207
+                set poe-capable 1
+                set vlan "Security_Camera"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port3"
+                set speed-mask 207
+                set poe-capable 1
+                set vlan "Staff"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port4"
+                set speed-mask 207
+                set poe-capable 1
+                set vlan "AP_MGMT"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port5"
+                set speed-mask 207
+                set vlan "POS"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port6"
+                set speed-mask 207
+                set vlan "Staff"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port7"
+                set speed-mask 207
+                set vlan "_default"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port8"
+                set speed-mask 207
+                set vlan "_default"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port9"
+                set speed 1000full
+                set speed-mask 216
+                set vlan "Staff"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port10"
+                set speed 1000full
+                set speed-mask 216
+                set vlan "Staff"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+        end
+    next
+end
+config wireless-controller wtp-profile
+    edit "Branch_AP"
+        config platform
+            set type U321EV
+        end
+        set handoff-sta-thresh 30
+        config radio-1
+            set band 802.11n,g-only
+            set vap-all manual
+            set vaps "Guest_WIFI" "Staff_WIFI"
+            set vap1 "Guest_WIFI"
+            set vap2 "Staff_WIFI"
+            set channel "1" "6" "11"
+        end
+        config radio-2
+            set band 802.11ac
+            set vap-all manual
+            set vaps "Guest_WIFI" "Staff_WIFI"
+            set vap1 "Guest_WIFI"
+            set vap2 "Staff_WIFI"
+            set channel "36" "40" "44" "48" "52" "56" "60" "64" "100" "104" "108" "112" "116" "120" "124" "128" "132" "136" "140" "144" "149" "153" "157" "161" "165"
+        end
+    next
+end
+config wireless-controller wtp
+    edit "PU321E5E00000000"
+        set admin enable
+        set wtp-profile "Branch_AP"
+        config radio-1
+        end
+        config radio-2
+        end
+    next
+end
+config router static
+    edit 0
+        set dst 10.0.0.0 255.0.0.0
+        set blackhole enable
+    next
+end
+config router bgp
+    set as 65001
+    set router-id 10.0.1.1
+    set keepalive-timer 5
+    set holdtime-timer 15
+    set ibgp-multipath enable
+    set additional-path enable
+    config neighbor
+        edit "10.10.10.1"
+            set advertisement-interval 1
+            set link-down-failover enable
+            set soft-reconfiguration enable
+            set remote-as 65001
+        next
+        edit "10.10.11.1"
+            set advertisement-interval 1
+            set link-down-failover enable
+            set soft-reconfiguration enable
+            set remote-as 65001
+        next
+    end
+    config network
+        edit 1
+            set prefix 10.0.1.0 255.255.255.0
+        next
+    end
+end

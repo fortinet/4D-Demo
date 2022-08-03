@@ -17,3 +17,13 @@ The following settings are specific to the demo and should be changed to fit you
 2) port1 and port2 are used for WAN1 and WAN2 respectively. Replace them with the ports you use for your WAN connections.
 
 3) The datacenter uses the local subnet 192.168.1.0/24. Adjust the "Datacenter" object to match your LAN subnet.
+
+4) If you are not utilizing eBGP peering for your Datacenter LAN, you can advertise the connected LAN segment the same way the branches do in BGP:
+
+config router bgp
+    config network
+        edit 1
+            set prefix 192.168.1.0 255.255.255.0
+        next
+    end
+end

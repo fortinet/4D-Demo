@@ -20,10 +20,11 @@ The following settings are specific to the demo and should be changed to fit you
 
 4) If you are not utilizing eBGP peering for your Datacenter LAN, you can advertise the connected LAN segment the same way the branches do in BGP:
 
-`config router bgp
-    config network
-        edit 1
-            set prefix 192.168.1.0 255.255.255.0
-        next
-    end
-end`
+    
+        config router bgp
+            config network
+                edit 1
+                set prefix 192.168.1.0 255.255.255.0
+                next
+            end
+        end

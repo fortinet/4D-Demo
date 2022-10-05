@@ -3,8 +3,8 @@
 4-D Demo configurations are a collection of configurations which complement the preceeding 3 Ds: Define, Design, and Deploy. Demo configurations are provided for:
 
 - [SD-WAN](https://github.com/fortinet/4D-Demo/tree/main/4D-SDWAN)
+- [Switching](https://github.com/fortinet/4D-Demo/tree/main/4D-Switching)
 - Wireless (Coming)
-- Switching (Coming)
 - [ZTNA](https://github.com/fortinet/4D-Demo/tree/main/4D-ZTNA)
 - [SD-Branch](https://github.com/fortinet/4D-Demo/tree/main/SD-Branch)
 

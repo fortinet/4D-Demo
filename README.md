@@ -7,6 +7,7 @@
 - Wireless (Coming)
 - [ZTNA](https://github.com/fortinet/4D-Demo/tree/main/4D-ZTNA)
 - [SD-Branch](https://github.com/fortinet/4D-Demo/tree/main/SD-Branch)
+- [NGFW](https://github.com/fortinet/4D-Demo/tree/main/NGFW)
 
 # Overview
 

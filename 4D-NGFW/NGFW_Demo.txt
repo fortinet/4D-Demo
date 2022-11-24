@@ -3,7 +3,7 @@ config system global
     set admin-lockout-threshold 10
     set admin-maintainer disable
     set admin-sport 9443
-    set admin-ssh-port 22
+    set admin-ssh-port 9922
     set gui-certificates enable
     set hostname "FW_FLR1"
 end
@@ -219,7 +219,7 @@ config wireless-controller wtp-profile
     next
 end
 config wireless-controller wtp
-    edit "PU321E5E19004817"
+    edit "AP_SN"
         set admin enable
         set wtp-profile "Corp_Wireless"
         config radio-1

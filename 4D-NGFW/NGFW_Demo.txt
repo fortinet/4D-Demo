@@ -243,7 +243,7 @@ config system admin
         set fortitoken "ABC123"
         set email-to "ABC@123.net"
         set gui-default-dashboard-template "minimal"
-        set password 5uper$ecure!@#
+        set password 5uperSecure!@#
     next
     edit "FWAdmin"
         set remote-auth enable
@@ -254,7 +254,7 @@ config system admin
         set fortitoken "ABC321"
         set email-to "ABC@321.net"
         set remote-group "Admin"
-        set password $uper5ecure#@!
+        set password Super5ecure#@!
     next
 end
 config log fortiguard setting

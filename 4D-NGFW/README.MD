@@ -10,17 +10,29 @@ The configuration recommended adheres to Fortinet security best practices and pr
 This document will cover the step-by-step procedures required to deploy a Next Generation Firewall for a SMB environment using a 70F FortiGate. This guide outlines procedures based on recommended Fortinet Best Practices. In this case, the customer is defined as follows:
 
 •	A Small-Medium sized Business ranging from 20-100 employees with several departments
+
 •	Single location with a single WAN connection
 
+
 The following are the requirements:
+
 •	Deploy one FortiGate at the network edge
+
 •	Segment the network for different departments, though only Sales, Engineering, and IT are specified for brevity.
+
 •	Provide Next Generation Firewall Security by leveraging the UTM features of the FortiGate 
+
 •	Implement security policies for the company by applying appropriate security profiles to firewall policies 
+
 •	Configure wireless networks to provide access to department-specific resources
+
 	o	Secure wireless networks using WPA2-Enterprise that is linked to users on a remote server
+
 •	Send FortiGate logs offsite to FortiGate Cloud
-•	Leverage FortiSandbox to inspect suspicious files that do not match any existing virus signatures 
+
+•	Leverage FortiSandbox to inspect suspicious files that do not match any 
+existing virus signatures 
+
 •	Harden the device to restrict management access from external sources.
 
 # How to

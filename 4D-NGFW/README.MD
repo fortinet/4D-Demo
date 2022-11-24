@@ -26,7 +26,7 @@ The following are the requirements:
 
 •	Configure wireless networks to provide access to department-specific resources
 
-	o	Secure wireless networks using WPA2-Enterprise that is linked to users on a remote server
+•	Secure wireless networks using WPA2-Enterprise that is linked to users on a remote server
 
 •	Send FortiGate logs offsite to FortiGate Cloud
 

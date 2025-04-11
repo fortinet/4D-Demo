@@ -1,0 +1,276 @@
+config system interface
+    edit "port1"
+        set vdom "root"
+        set ip 10.198.5.2 255.255.255.248
+        set allowaccess ping
+        set type physical
+        set alias "WAN1"
+        set role wan
+    next
+    edit "port2"
+        set vdom "root"
+        set ip 10.198.6.2 255.255.255.248
+        set allowaccess ping
+        set type physical
+        set alias "WAN2"
+        set role wan
+    next
+    edit "port3"
+        set vdom "root"
+        set ip 172.16.1.2 255.255.255.252
+        set allowaccess ping
+        set type physical
+        set alias "LAN"
+        set device-identification enable
+        set role lan
+    next
+    edit "VPN1"
+        set vdom "root"
+        set ip 10.10.31.253 255.255.255.255
+        set allowaccess ping
+        set type tunnel
+        set remote-ip 10.10.31.254 255.255.224.0
+        set interface "port1"
+    next
+    edit "VPN2"
+        set vdom "root"
+        set ip 10.10.63.253 255.255.255.255
+        set allowaccess ping
+        set type tunnel
+        set remote-ip 10.10.63.254 255.255.224.0
+        set interface "port2"
+    next
+    edit "HUB1-Lo"
+        set vdom "root"
+        set ip 172.16.255.253 255.255.255.255
+        set allowaccess ping
+        set type loopback
+    next
+end
+config system dns
+    set primary 96.45.45.45
+    set secondary 96.45.46.46
+    set server-hostname "globalsdns.fortinet.net"
+end
+config system central-management
+    set type fortimanager
+    set serial-number "FMGVMXXX"
+    set fmg "1.2.3.4"
+end
+config firewall address
+    edit "Branch-LAN"
+        set subnet 10.1.0.0 255.255.0.0
+    next
+    edit "Corp_Loopback"
+        set subnet 172.16.0.0 255.255.0.0
+    next
+    edit "Corp_Overlay_Network"
+        set subnet 10.10.0.0 255.255.0.0
+    next
+    edit "DC_Transit_Network1"
+        set subnet 172.16.1.0 255.255.255.0
+    next
+    edit "DC_Transit_Network2"
+        set subnet 172.16.2.0 255.255.255.0
+    next
+    edit "Datacenter-LAN"
+        set subnet 192.168.1.0 255.255.255.0
+    next
+end
+config system sdwan
+    set status enable
+    config zone
+        edit "VPN"
+        next
+    end
+    config members
+        edit 1
+            set interface "VPN1"
+            set zone "VPN"
+        next
+        edit 2
+            set interface "VPN2"
+            set zone "VPN"
+        next
+    end
+end
+config vpn ipsec phase1-interface
+    edit "VPN1"
+        set type dynamic
+        set interface "port1"
+        set ike-version 2
+        set peertype any
+        set net-device disable
+        set mode-cfg enable
+        set proposal aes256-sha256
+        set add-route disable
+        set dpd on-idle
+        set network-overlay enable
+        set network-id 1
+        set ipv4-start-ip 10.10.0.1
+        set ipv4-end-ip 10.10.31.252
+        set ipv4-netmask 255.255.224.0
+        set psksecret ENC 3H(...)kSeXMMnv0Zi6rIkiRWj6U0w==
+        set dpd-retryinterval 60
+    next
+    edit "VPN2"
+        set type dynamic
+        set interface "port2"
+        set ike-version 2
+        set peertype any
+        set net-device disable
+        set mode-cfg enable
+        set proposal aes256-sha256
+        set add-route disable
+        set dpd on-idle
+        set network-overlay enable
+        set network-id 2
+        set ipv4-start-ip 10.10.32.1
+        set ipv4-end-ip 10.10.63.252
+        set ipv4-netmask 255.255.224.0
+        set psksecret ENC 2H(...)kSeXMMnv0Zi6rIkiRWj6U0w==
+        set dpd-retryinterval 60
+    next
+end
+config vpn ipsec phase2-interface
+    edit "VPN1"
+        set phase1name "VPN1"
+        set proposal aes256-sha256
+    next
+    edit "VPN2"
+        set phase1name "VPN2"
+        set proposal aes256-sha256
+    next
+end
+config firewall policy
+    edit 1
+        set name "Datacenter LAN Outbound Access"
+        set srcintf "port3"
+        set dstintf "port1" "port2"
+        set action accept
+        set srcaddr "DC_Transit_Network1" "DC_Transit_Network2" "Datacenter-LAN"
+        set dstaddr "all"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+        set nat enable
+    next
+    edit 2
+        set name "Health Check Access"
+        set srcintf "VPN"
+        set dstintf "HUB1-Lo"
+        set action accept
+        set srcaddr "Corp_Overlay_Network"
+        set dstaddr "Corp_Loopback"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+    next
+    edit 4
+        set name "Branch Access to Datacenter LAN"
+        set srcintf "VPN"
+        set dstintf "port3"
+        set action accept
+        set srcaddr "Branch-LAN"
+        set dstaddr "Datacenter-LAN"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+    next
+    edit 5
+        set name "Datacenter LAN1 to Remote Branch"
+        set srcintf "port3"
+        set dstintf "VPN"
+        set action accept
+        set srcaddr "Datacenter-LAN"
+        set dstaddr "Branch-LAN"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+    next
+end
+config router access-list
+    edit "VPN1"
+        config rule
+            edit 1
+                set prefix 10.10.10.0 255.255.255.0
+            next
+        end
+    next
+    edit "VPN2"
+        config rule
+            edit 1
+                set prefix 10.10.11.0 255.255.255.0
+            next
+        end
+    next
+    edit "Datacenter"
+        config rule
+            edit 1
+                set prefix 192.168.1.0 255.255.255.0
+            next
+        end
+    next
+end
+config router static
+    edit 1
+        set gateway 10.198.5.1
+        set device "port1"
+    next
+    edit 2
+        set gateway 10.198.6.1
+        set device "port2"
+    next
+end
+config router bgp
+    set as 65000
+    set router-id 172.16.255.253
+    set ibgp-multipath enable
+    set graceful-restart enable
+    config neighbor
+        edit "172.16.1.1"
+            set remote-as 65100
+        next
+    end
+    config neighbor-group
+        edit "VPN1"
+            set capability-graceful-restart enable
+            set link-down-failover enable
+            set next-hop-self enable
+            set passive disable
+            set soft-reconfiguration enable
+            set remote-as 65000
+            set route-reflector-client enable
+        next
+        edit "VPN2"
+            set capability-graceful-restart enable
+            set link-down-failover enable
+            set next-hop-self enable
+            set passive disable
+            set soft-reconfiguration enable
+            set remote-as 65000
+            set route-reflector-client enable
+        next
+    end
+    config neighbor-range
+        edit 1
+            set prefix 10.10.0.0 255.255.224.0
+            set neighbor-group "VPN1"
+        next
+        edit 2
+            set prefix 10.10.32.0 255.255.224.0
+            set neighbor-group "VPN2"
+        next
+    end
+    config network
+        edit 1
+            set prefix 10.10.0.0 255.255.224.0
+        next
+        edit 2
+            set prefix 10.10.32.0 255.255.224.0
+        next
+    end
+    config redistribute "connected"
+        set status enable
+    end
+end

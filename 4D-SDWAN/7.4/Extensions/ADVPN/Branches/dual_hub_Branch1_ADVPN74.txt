@@ -1,0 +1,48 @@
+config vpn ipsec phase1-interface
+    edit "HUB1-VPN1"
+        set auto-discovery-receiver enable
+        set auto-discovery-shortcuts dependent
+    next
+    edit "HUB1-VPN2"
+        set auto-discovery-receiver enable
+        set auto-discovery-shortcuts dependent
+    next
+    edit "HUB2-VPN1"
+        set auto-discovery-receiver enable
+        set auto-discovery-shortcuts dependent
+    next
+    edit "HUB2-VPN2"
+        set auto-discovery-receiver enable
+        set auto-discovery-shortcuts dependent
+    next
+end
+config router bgp
+    config neighbor
+        edit "10.10.159.253"
+            set additional-path receive
+        next
+        edit "10.10.191.253"
+            set additional-path receive
+        next
+        edit "10.10.31.253"
+            set additional-path receive
+        next
+        edit "10.10.63.253"
+            set additional-path receive
+        next
+    end
+end
+config system sdwan
+    config service
+        edit 4
+            set dst "Datacenter-LAN" "Branch-LAN"
+        next
+    end
+end
+config firewall policy
+    edit 3
+        set srcaddr "Datacenter-LAN" "Branch-LAN" 
+    next
+end
+
+

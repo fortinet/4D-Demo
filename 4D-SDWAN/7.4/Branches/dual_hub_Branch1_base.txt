@@ -1,0 +1,466 @@
+config firewall address
+    edit "Branch-LAN"
+        set subnet 10.1.0.0 255.255.0.0
+    next
+    edit "Datacenter-LAN"
+        set subnet 192.168.1.0 255.255.255.0
+    next
+    edit "RFC1918-10"
+        set subnet 10.0.0.0 255.0.0.0
+    next
+    edit "RFC1918-172"
+        set subnet 172.16.0.0 255.240.0.0
+    next
+    edit "RFC1918-192"
+        set subnet 192.168.0.0 255.255.0.0
+    next
+end
+config firewall addrgrp
+    edit "RFC1918-GRP"
+        set member "RFC1918-10" "RFC1918-172" "RFC1918-192"
+    next
+end
+config system interface
+    edit "port1"
+        set vdom "root"
+        set ip 10.198.1.2 255.255.255.248
+        set allowaccess ping
+        set type physical
+        set alias "WAN1"
+        set role wan
+    next
+    edit "port2"
+        set vdom "root"
+        set ip 10.198.2.2 255.255.255.248
+        set allowaccess ping
+        set type physical
+        set alias "WAN2"
+        set role wan
+    next
+    edit "port3"
+        set vdom "root"
+        set ip 10.1.1.1 255.255.255.0
+        set allowaccess ping
+        set type physical
+        set alias "LAN"
+        set role lan
+        set device-identification enable
+    next
+    edit "HUB1-VPN1"
+        set vdom "root"
+        set allowaccess ping
+        set type tunnel
+        set interface "port1"
+    next
+    edit "HUB1-VPN2"
+        set vdom "root"
+        set allowaccess ping
+        set type tunnel
+        set interface "port2"
+    next
+    edit "HUB2-VPN1"
+        set vdom "root"
+        set allowaccess ping
+        set type tunnel
+        set interface "port1"
+    next
+    edit "HUB2-VPN2"
+        set vdom "root"
+        set allowaccess ping
+        set type tunnel
+        set interface "port2"
+    next
+    edit "Branch1-Lo"
+        set vdom "root"
+        set ip 172.16.0.1 255.255.255.255
+        set allowaccess ping
+        set type loopback
+    next
+end
+config application group
+    edit "Critical_DIA_Applications"
+        set application 16920 43541 17459
+    next
+    edit "Critical_Video_Applications"
+        set application 37065 31077 16354
+    next
+end  
+config vpn ipsec phase1-interface
+    edit "HUB1-VPN1"
+        set interface "port1"
+        set ike-version 2
+        set peertype any
+        set net-device enable
+        set mode-cfg enable
+        set proposal aes256-sha256
+        set add-route disable
+        set localid "Branch1"
+        set idle-timeout enable
+        set network-overlay enable
+        set network-id 1
+        set remote-gw 10.198.5.2
+        set psksecret fortinet
+    next
+    edit "HUB1-VPN2"
+        set interface "port2"
+        set ike-version 2
+        set peertype any
+        set net-device enable
+        set mode-cfg enable
+        set proposal aes256-sha256
+        set add-route disable
+        set localid "Branch1"
+        set idle-timeout enable
+        set network-overlay enable
+        set network-id 2
+        set remote-gw 10.198.6.2
+        set psksecret fortinet
+    next
+    edit "HUB2-VPN1"
+        set interface "port1"
+        set ike-version 2
+        set peertype any
+        set net-device enable
+        set mode-cfg enable
+        set proposal aes256-sha256
+        set add-route disable
+        set localid "Branch1"
+        set idle-timeout enable
+        set network-overlay enable
+        set network-id 4
+        set remote-gw 10.198.7.2
+        set psksecret fortinet
+    next
+    edit "HUB2-VPN2"
+        set interface "port2"
+        set ike-version 2
+        set peertype any
+        set net-device enable
+        set mode-cfg enable
+        set proposal aes256-sha256
+        set add-route disable
+        set localid "Branch1"
+        set idle-timeout enable
+        set network-overlay enable
+        set network-id 5
+        set remote-gw 10.198.8.2
+        set psksecret fortinet
+    next
+end
+config vpn ipsec phase2-interface
+    edit "HUB1-VPN1"
+        set phase1name "HUB1-VPN1"
+        set proposal aes256-sha256
+        set auto-negotiate enable
+    next
+    edit "HUB1-VPN2"
+        set phase1name "HUB1-VPN2"
+        set proposal aes256-sha256
+        set auto-negotiate enable
+    next
+    edit "HUB2-VPN1"
+        set phase1name "HUB2-VPN1"
+        set proposal aes256-sha256
+        set auto-negotiate enable
+    next
+    edit "HUB2-VPN2"
+        set phase1name "HUB2-VPN2"
+        set proposal aes256-sha256
+        set auto-negotiate enable
+    next
+end
+config system sdwan
+    set status enable
+    config zone
+        edit "virtual-wan-link"
+        next
+        edit "WAN1"
+        next
+        edit "WAN2"
+        next
+        edit "HUB1"
+        next
+        edit "HUB2"
+        next
+    end
+    config members
+        edit 1
+            set interface "port1"
+            set zone "WAN1"
+        next
+        edit 2
+            set interface "port2"
+            set zone "WAN2"
+            cost 10
+            set comment "less preferred than port1/WAN1"
+        next
+        edit 3
+            set interface "HUB1-VPN1"
+            set zone "HUB1"
+        next
+        edit 4
+            set interface "HUB1-VPN2"
+            set zone "HUB1"
+            set cost 10
+            set comment "Less preferred underlay to the preferred hub"
+        next
+        edit 5
+            set interface "HUB2-VPN1"
+            set zone "HUB2"
+            set cost 20
+            set comment "less preferred hub using preferred underlay"
+        next
+        edit 6
+            set interface "HUB2-VPN2"
+            set zone "HUB2"
+            set cost 30
+            set comment "less preferred underlay to less preferred hub"
+        next
+    end
+    config health-check
+        edit "Internet"
+            set server "1.1.1.1"
+            set failtime 3
+            set update-cascade-interface disable
+            set update-static-route disable
+            set sla-fail-log-period 10
+            set sla-pass-log-period 10
+            set members 1 2
+            config sla
+                edit 1
+                    set latency-threshold 250
+                    set jitter-threshold 55
+                    set packetloss-threshold 1
+                next
+            end
+        next
+        edit "HUB1_HC"
+            set server "172.16.255.253"
+            set failtime 2
+            set update-cascade-interface disable
+            set update-static-route disable
+            set sla-fail-log-period 10
+            set sla-pass-log-period 10
+            set members 3 4
+            config sla
+                edit 1
+                    set latency-threshold 155
+                    set jitter-threshold 55
+                    set packetloss-threshold 1
+                next
+            end
+        next
+        edit "HUB2_HC"
+            set server "172.16.255.252"
+            set failtime 2
+            set update-cascade-interface disable
+            set update-static-route disable
+            set sla-fail-log-period 10
+            set sla-pass-log-period 10
+            set members 6 5
+            config sla
+                edit 1
+                    set latency-threshold 255
+                    set jitter-threshold 55
+                    set packetloss-threshold 1
+                next
+            end
+        next
+        edit "Internet_Passive"
+            set server "8.8.8.8"
+            set detect-mode prefer-passive
+            set failtime 3
+            set update-cascade-interface disable
+            set update-static-route disable
+            set sla-fail-log-period 10
+            set sla-pass-log-period 10
+            set members 1 2
+            config sla
+                edit 1
+                    set latency-threshold 180
+                    set jitter-threshold 45
+                    set packetloss-threshold 1
+                next
+            end
+        next
+    end
+    config service
+        edit 1
+            set name "Critical_DIA"
+            set mode priority
+            set src "Branch-LAN"
+            set internet-service enable
+            set internet-service-app-ctrl-group "Critical_DIA_Applications"
+            set health-check "Internet"
+            set priority-members 1 2
+        next
+        edit 2
+            set name "Critical_Video"
+            set mode priority
+            set src "Branch-LAN"
+            set internet-service enable
+            set internet-service-app-ctrl-group "Critical_Video_Applications"
+            set health-check "Internet_Passive"
+            set priority-members 1 2
+            set passive-measurement enable
+        next
+        edit 3
+            set name "Business_Applications"
+            set mode priority
+            set src "Branch-LAN"
+            set internet-service enable
+            set internet-service-app-ctrl-category 28 30
+            set health-check "Internet"
+            set priority-members 1 2
+        next
+        edit 4
+            set name "Corporate_Traffic"
+            set mode sla
+            set dst "Datacenter-LAN"
+            set src "Branch-LAN"
+            config sla
+                edit "HUB1_HC"
+                    set id 1
+                next
+                edit "HUB2_HC"
+                    set id 1
+                next
+            end
+            set priority-members 3 4 5 6
+        next
+        edit 5
+            set name "Non_Critical_DIA"
+            set dst "RFC1918-GRP"
+			set dst-negate enable
+            set src "Branch-LAN"
+            set priority-members 2
+        next
+    end
+    config neighbor
+        edit "10.10.159.253"
+            set member 5
+            set health-check "HUB2_HC"
+            set sla-id 1
+        next
+        edit "10.10.191.253"
+            set member 6
+            set health-check "HUB2_HC"
+            set sla-id 1
+        next
+        edit "10.10.31.253"
+            set member 3
+            set health-check "HUB1_HC"
+            set sla-id 1
+        next
+        edit "10.10.63.253"
+            set member 4
+            set health-check "HUB1_HC"
+            set sla-id 1
+        next
+    end
+end	
+config firewall policy
+    edit 1
+        set name "Direct Internet Access (DIA)"
+        set srcintf "port3"
+        set dstintf "WAN1" "WAN2"
+        set action accept
+        set srcaddr "Branch-LAN"
+        set dstaddr "RFC1918-GRP"
+        set schedule "always"
+        set service "ALL"
+        set passive-wan-health-measurement enable
+        set logtraffic all
+        set auto-asic-offload disable
+        set nat enable
+		set dstaddr-negate enable
+    next
+    edit 2
+        set name "LAN to Corporate Region"
+        set srcintf "port3"
+        set dstintf "HUB1" "HUB2"
+        set action accept
+        set srcaddr "Branch-LAN"
+        set dstaddr "Branch-LAN" "Datacenter-LAN"
+        set schedule "always"
+        set service "ALL"
+        set passive-wan-health-measurement enable
+        set logtraffic all
+        set auto-asic-offload disable
+    next
+    edit 3
+        set name "Corporate Region to LAN"
+        set srcintf "HUB1" "HUB2"
+        set dstintf "port3"
+        set action accept
+        set srcaddr "Datacenter-LAN"
+        set dstaddr "Branch-LAN"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+    next
+end
+config router static
+    edit 1
+        set gateway 10.198.1.1
+        set device "port1"
+    next
+    edit 2
+        set gateway 10.198.2.1
+        set device "port2"
+    next
+end
+config router bgp
+    set as 65000
+    set router-id 172.16.0.1
+    set ibgp-multipath enable
+    set additional-path enable
+    set recursive-next-hop enable
+    set graceful-restart enable
+    set additional-path-select 255
+    config neighbor
+        edit "10.10.159.253"
+            set advertisement-interval 1
+            set capability-graceful-restart enable
+            set link-down-failover enable
+            set soft-reconfiguration enable
+            set description "HUB2-VPN1"
+            set interface "HUB2-VPN1"
+            set remote-as 65000
+            set connect-timer 10
+        next
+        edit "10.10.191.253"
+            set advertisement-interval 1
+            set capability-graceful-restart enable
+            set link-down-failover enable
+            set soft-reconfiguration enable
+            set description "HUB2-VPN2"
+            set interface "HUB2-VPN2"
+            set remote-as 65000
+            set connect-timer 10
+        next
+        edit "10.10.31.253"
+            set advertisement-interval 1
+            set capability-graceful-restart enable
+            set link-down-failover enable
+            set soft-reconfiguration enable
+            set description "HUB1-VPN1"
+            set interface "HUB1-VPN1"
+            set remote-as 65000
+            set connect-timer 10
+        next
+        edit "10.10.63.253"
+            set advertisement-interval 1
+            set capability-graceful-restart enable
+            set link-down-failover enable
+            set soft-reconfiguration enable
+            set description "HUB1-VPN2"
+            set interface "HUB1-VPN2"
+            set remote-as 65000
+            set connect-timer 10
+        next
+    end
+    config redistribute "connected"
+        set status enable
+    end
+end

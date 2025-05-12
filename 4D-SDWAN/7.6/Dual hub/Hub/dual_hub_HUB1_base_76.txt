@@ -1,0 +1,243 @@
+config system interface
+    edit "port1"
+        set vdom "root"
+        set ip 10.198.5.2 255.255.255.248
+        set allowaccess ping
+        set alias "WAN1"
+        set role wan
+    next
+    edit "port2"
+        set vdom "root"
+        set ip 10.198.6.2 255.255.255.248
+        set allowaccess ping
+        set alias "WAN2"
+        set role wan
+    next
+    edit "port3"
+        set vdom "root"
+        set ip 172.16.1.2 255.255.255.252
+        set allowaccess ping
+        set alias "Internal"
+        set role lan
+    next
+    edit "HUB-Lo"
+        set vdom "root"
+        set ip 172.16.255.251 255.255.255.255
+        set allowaccess ping
+        set type loopback
+    next
+    edit "BGP-Lo"
+        set vdom "root"
+        set ip 172.16.255.252 255.255.255.255
+        set allowaccess ping
+        set type loopback
+    next
+    edit "VPN1"
+        set vdom "root"
+        set type tunnel
+        set interface "port1"
+    next
+    edit "VPN2"
+        set vdom "root"
+        set type tunnel
+        set interface "port2"
+    next
+end
+config firewall address
+    edit "ACME_Loopback"
+        set subnet 172.16.0.0 255.255.0.0
+    next
+    edit "Branch-LAN"
+        set subnet 10.1.0.0 255.255.0.0
+    next
+    edit "Datacenter-LAN"
+        set subnet 192.168.1.0 255.255.255.0
+    next
+end
+config vpn ipsec phase1-interface
+    edit "VPN1"
+        set type dynamic
+        set interface "port1"
+        set ike-version 2
+        set peertype any
+        set net-device disable
+        set exchange-ip-addr4 172.16.255.252
+        set proposal aes256-sha256
+        set add-route disable
+        set dpd on-idle
+        set auto-discovery-sender enable
+        set network-overlay enable
+        set network-id 1
+        set transport auto
+        set psksecret *****
+        set dpd-retrycount 2
+        set dpd-retryinterval 2
+    next
+    edit "VPN2"
+        set type dynamic
+        set interface "port2"
+        set ike-version 2
+        set peertype any
+        set net-device disable
+        set exchange-ip-addr4 172.16.255.252
+        set proposal aes256-sha256
+        set add-route disable
+        set dpd on-idle
+        set auto-discovery-sender enable
+        set network-overlay enable
+        set network-id 2
+        set transport auto
+        set psksecret *****
+        set dpd-retrycount 2
+        set dpd-retryinterval 2
+    next
+end
+config vpn ipsec phase2-interface
+    edit "VPN1"
+        set phase1name "VPN1"
+        set proposal aes256-sha256
+    next
+    edit "VPN2"
+        set phase1name "VPN2"
+        set proposal aes256-sha256
+    next
+end
+config firewall policy
+    edit 1
+        set name "Branch to Datacenter"
+        set srcintf "VPN1" "VPN2"
+        set dstintf "port3"
+        set action accept
+        set srcaddr "Branch-LAN"
+        set dstaddr "Datacenter-LAN"
+        set dstaddr "Datacenter-LAN"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+    next
+    edit 2
+        set name "Datacenter to Branch"
+        set srcintf "port3"
+        set dstintf "VPN1" "VPN2"
+        set action accept
+        set srcaddr "Datacenter-LAN"
+        set dstaddr "Branch-LAN"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+    next
+    edit 3
+        set name "Branch to Branch"
+        set srcintf "VPN1" "VPN2"
+        set dstintf "VPN1" "VPN2"
+        set action accept
+        set srcaddr "Branch-LAN"
+        set dstaddr "Branch-LAN"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+    next
+    edit 4
+        set name "Health Check Access"
+        set srcintf "VPN1" "VPN2"
+        set dstintf "HUB-Lo"
+        set action accept
+        set srcaddr "ACME_Loopback"
+        set dstaddr "ACME_Loopback"
+        set schedule "always"
+        set service "ALL"
+    next
+    edit 5
+        set name "Peering"
+        set srcintf "VPN1" "VPN2"
+        set dstintf "BGP-Lo"
+        set action accept
+        set srcaddr "all"
+        set dstaddr "all"
+        set schedule "always"
+        set service "PING" "BGP"
+    next
+end
+config router route-map
+    edit "LOCAL_REGION"
+        config rule
+            edit 1
+                unset set-ip-prefsrc
+            next
+        end
+    next
+end
+config router static
+    edit 1
+        set gateway 10.198.5.1
+        set device "port1"
+    next
+    edit 2
+        set gateway 10.198.6.1
+        set device "port2"
+    next
+    edit 50
+        set dst 10.1.0.0 255.255.0.0
+        set blackhole enable
+        set vrf 0
+    next
+end
+config router bgp
+    set as 65000
+    set router-id 172.16.255.252
+    set ebgp-multipath enable
+    set ibgp-multipath enable
+    set recursive-next-hop enable
+    set recursive-inherit-priority enable
+    set graceful-restart enable
+    config neighbor
+        edit "172.16.1.1"
+            set remote-as 65100
+        next
+    end
+    config neighbor-group
+        edit "EDGE"
+            set advertisement-interval 1
+            set next-hop-self enable
+            set soft-reconfiguration enable
+            set interface "BGP-Lo"
+            set remote-as 65000
+            set update-source "BGP-Lo"
+        next
+    end
+    config neighbor-range
+        edit 1
+            set prefix 172.16.0.0 255.255.0.0
+            set neighbor-group "EDGE"
+        next
+    end
+    config network
+        edit 1
+            set prefix 172.16.0.0 255.255.0.0
+            set route-map "LOCAL_REGION"
+        next
+        edit 10
+            set prefix 10.1.0.0 255.255.0.0
+        next
+    end
+    config redistribute "connected"
+    end
+    config redistribute "rip"
+    end
+    config redistribute "ospf"
+    end
+    config redistribute "static"
+    end
+    config redistribute "isis"
+    end
+    config redistribute6 "connected"
+    end
+    config redistribute6 "rip"
+    end
+    config redistribute6 "ospf"
+    end
+    config redistribute6 "static"
+    end
+    config redistribute6 "isis"
+    end
+end

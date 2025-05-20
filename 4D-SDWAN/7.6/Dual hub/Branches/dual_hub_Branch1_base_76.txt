@@ -430,11 +430,6 @@ config router bgp
             set neighbor-group "DYN_BRANCH"
         next
     end
-    config network
-        edit 1
-            set prefix 10.1.1.0 255.255.255.0
-        next
-    end
     config redistribute "connected"
         set status enable
         set route-map "port3_only"

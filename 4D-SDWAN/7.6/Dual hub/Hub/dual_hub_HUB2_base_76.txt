@@ -20,15 +20,15 @@ config system interface
         set alias "Internal"
         set role lan
     next
-    edit "HUB-Lo"
+    edit "HUB2-Lo"
         set vdom "root"
-        set ip 172.16.255.251 255.255.255.255
+        set ip 172.16.255.253 255.255.255.255
         set allowaccess ping
         set type loopback
     next
     edit "BGP-Lo"
         set vdom "root"
-        set ip 172.16.255.250 255.255.255.255
+        set ip 172.16.255.251 255.255.255.255
         set allowaccess ping
         set type loopback
     next
@@ -61,7 +61,7 @@ config vpn ipsec phase1-interface
         set ike-version 2
         set peertype any
         set net-device disable
-        set exchange-ip-addr4 172.16.255.250
+        set exchange-ip-addr4 172.16.255.251
         set proposal aes256-sha256
         set add-route disable
         set dpd on-idle
@@ -79,7 +79,7 @@ config vpn ipsec phase1-interface
         set ike-version 2
         set peertype any
         set net-device disable
-        set exchange-ip-addr4 172.16.255.250
+        set exchange-ip-addr4 172.16.255.251
         set proposal aes256-sha256
         set add-route disable
         set dpd on-idle
@@ -137,24 +137,14 @@ config firewall policy
         set logtraffic all
     next
     edit 4
-        set name "Health Check Access"
+        set name "Health Check - Peering"
         set srcintf "VPN1" "VPN2"
-        set dstintf "HUB-Lo"
+        set dstintf "HUB1-Lo" "BGP-Lo"
         set action accept
         set srcaddr "ACME_Loopback"
         set dstaddr "ACME_Loopback"
         set schedule "always"
         set service "ALL"
-    next
-    edit 5
-        set name "Peering"
-        set srcintf "VPN1" "VPN2"
-        set dstintf "BGP-Lo"
-        set action accept
-        set srcaddr "all"
-        set dstaddr "all"
-        set schedule "always"
-        set service "PING" "BGP"
     next
 end
 config router route-map
@@ -183,7 +173,7 @@ config router static
 end
 config router bgp
     set as 65000
-    set router-id 172.16.255.250
+    set router-id 172.16.255.251
     set ebgp-multipath enable
     set ibgp-multipath enable
     set recursive-next-hop enable

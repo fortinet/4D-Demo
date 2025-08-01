@@ -20,9 +20,9 @@ config system interface
         set alias "Internal"
         set role lan
     next
-    edit "HUB-Lo"
+    edit "HUB1-Lo"
         set vdom "root"
-        set ip 172.16.255.251 255.255.255.255
+        set ip 172.16.255.253 255.255.255.255
         set allowaccess ping
         set type loopback
     next
@@ -110,7 +110,6 @@ config firewall policy
         set action accept
         set srcaddr "Branch-LAN"
         set dstaddr "Datacenter-LAN"
-        set dstaddr "Datacenter-LAN"
         set schedule "always"
         set service "ALL"
         set logtraffic all
@@ -138,24 +137,14 @@ config firewall policy
         set logtraffic all
     next
     edit 4
-        set name "Health Check Access"
+        set name "Health Check - Peering"
         set srcintf "VPN1" "VPN2"
-        set dstintf "HUB-Lo"
+        set dstintf "HUB1-Lo" "BGP-Lo"
         set action accept
         set srcaddr "ACME_Loopback"
         set dstaddr "ACME_Loopback"
         set schedule "always"
         set service "ALL"
-    next
-    edit 5
-        set name "Peering"
-        set srcintf "VPN1" "VPN2"
-        set dstintf "BGP-Lo"
-        set action accept
-        set srcaddr "all"
-        set dstaddr "all"
-        set schedule "always"
-        set service "PING" "BGP"
     next
 end
 config router route-map

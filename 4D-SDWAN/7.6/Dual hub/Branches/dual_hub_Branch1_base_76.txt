@@ -36,24 +36,28 @@ config system interface
         set allowaccess ping
         set type tunnel
         set interface "port1"
+        set monitor-bandwidth enable
     next
     edit "HUB1-VPN2"
         set vdom "root"
         set allowaccess ping
         set type tunnel
         set interface "port2"
+        set monitor-bandwidth enable
     next
     edit "HUB2-VPN1"
         set vdom "root"
         set allowaccess ping
         set type tunnel
         set interface "port1"
+        set monitor-bandwidth enable
     next
     edit "HUB2-VPN2"
         set vdom "root"
         set allowaccess ping
         set type tunnel
         set interface "port2"
+        set monitor-bandwidth enable
     next
 end
 config firewall address
@@ -92,11 +96,11 @@ config system sdwan
         next
         edit "HUB1"
             set advpn-select enable
-            set advpn-health-check "HUB_HC"
+            set advpn-health-check "HUB"
         next
         edit "HUB2"
             set advpn-select enable
-            set advpn-health-check "HUB_HC"
+            set advpn-health-check "HUB"
         next
     end
     config members
@@ -112,38 +116,44 @@ config system sdwan
             set interface "HUB1-VPN1"
             set zone "HUB1"
             set source 172.16.0.1
+            set priority 10
         next
         edit 4
             set interface "HUB1-VPN2"
             set zone "HUB1"
             set source 172.16.0.1
+            set priority 10
         next
         edit 5
             set interface "HUB2-VPN1"
             set zone "HUB2"
             set source 172.16.0.1
             set cost 10
+            set priority 10
         next
         edit 6
             set interface "HUB2-VPN2"
             set zone "HUB2"
             set source 172.16.0.1
             set cost 10
+            set priority 10
         next
     end
     config health-check
-        edit "HUB_HC"
-            set server "172.16.255.251"
+        edit "HUB"
+            set server "172.16.255.253"
             set update-cascade-interface disable
             set update-static-route disable
+            set embed-measured-health enable
+            set sla-id-redistribute 1
             set sla-fail-log-period 10
             set sla-pass-log-period 10
             set members 3 4 5 6
             config sla
                 edit 1
-                    set latency-threshold 255
-                    set jitter-threshold 55
-                    set packetloss-threshold 1
+                    set latency-threshold 200
+                    set jitter-threshold 50
+                    set packetloss-threshold 3
                 next
             end
         next
@@ -200,7 +210,7 @@ config system sdwan
             set dst "Datacenter-LAN" "Branch-LAN"
             set src "Branch-LAN"
             config sla
-                edit "HUB_HC"
+                edit "HUB"
                     set id 1
                 next
             end
@@ -215,15 +225,17 @@ config system sdwan
         next
     end
     config neighbor
-        edit "172.16.255.250"
+        edit "172.16.255.251"
             set member 5 6
             set route-metric priority
-            set health-check "HUB_HC"
+            set health-check "HUB"
+            set sla-id 1
         next
         edit "172.16.255.252"
             set member 3 4
             set route-metric priority
-            set health-check "HUB_HC"
+            set health-check "HUB"
+            set sla-id 1
         next
     end
 end
@@ -236,7 +248,7 @@ config vpn ipsec phase1-interface
         set exchange-ip-addr4 172.16.0.1
         set proposal aes256-sha256
         set add-route disable
-        set localid "Branch1"
+        set localid "Br1_HUB1_VPN1"
         set idle-timeout enable
         set auto-discovery-receiver enable
         set network-overlay enable
@@ -255,7 +267,7 @@ config vpn ipsec phase1-interface
         set exchange-ip-addr4 172.16.0.1
         set proposal aes256-sha256
         set add-route disable
-        set localid "Branch1"
+        set localid "Br1_HUB1_VPN2"
         set idle-timeout enable
         set auto-discovery-receiver enable
         set network-overlay enable
@@ -274,7 +286,7 @@ config vpn ipsec phase1-interface
         set exchange-ip-addr4 172.16.0.1
         set proposal aes256-sha256
         set add-route disable
-        set localid "Branch1"
+        set localid "Br1_HUB2_VPN1"
         set idle-timeout enable
         set auto-discovery-receiver enable
         set network-overlay enable
@@ -293,7 +305,7 @@ config vpn ipsec phase1-interface
         set exchange-ip-addr4 172.16.0.1
         set proposal aes256-sha256
         set add-route disable
-        set localid "Branch1"
+        set localid "Br1_HUB2_VPN2"
         set idle-timeout enable
         set auto-discovery-receiver enable
         set network-overlay enable
@@ -364,22 +376,12 @@ config firewall policy
         set logtraffic all
     next
     edit 4
-        set name "Health Check Access"
-        set srcintf "Branch-Lo"
-        set dstintf "HUB1" "HUB2"
+        set name "Health Check - Peering"
+        set srcintf "Branch-Lo" "HUB1" "HUB2"
+        set dstintf "Branch-Lo" "HUB1" "HUB2"
         set action accept
         set srcaddr "ACME_Loopback"
         set dstaddr "ACME_Loopback"
-        set schedule "always"
-        set service "ALL"
-    next
-    edit 5
-        set name "BGP on loopback"
-        set srcintf "HUB1" "HUB2"
-        set dstintf "Branch-Lo"
-        set action accept
-        set srcaddr "all"
-        set dstaddr "all"
         set schedule "always"
         set service "ALL"
     next
@@ -391,9 +393,8 @@ config router bgp
     set additional-path enable
     set recursive-next-hop enable
     set graceful-restart enable
-    set additional-path-select 255
     config neighbor
-        edit "172.16.255.250"
+        edit "172.16.255.251"
             set advertisement-interval 1
             set capability-graceful-restart enable
             set soft-reconfiguration enable

@@ -1,6 +1,6 @@
-<mxfile modified="2025-05-20T13:48:22.622Z" host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.21 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="-cunna615BgUABc5PIRF" version="22.1.21" type="device">
+<mxfile modified="2025-08-01T16:19:12.225Z" host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.21 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="Q6Nbq1d2lm8X2nEW_i4p" version="22.1.21" type="device">
   <diagram id="1JJ-UvxjRfw-XplDersZ" name="Page-1">
-    <mxGraphModel dx="1418" dy="838" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="1339" dy="683" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -68,21 +68,21 @@
         </mxCell>
         <mxCell id="ffAO0UUNWGelMvOTSRRg-7" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;sourcePerimeterSpacing=10;endArrow=none;endFill=0;targetPerimeterSpacing=10;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=3;" parent="1" edge="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1800" y="520" as="sourcePoint" />
-            <mxPoint x="1720" y="520" as="targetPoint" />
+            <mxPoint x="1685" y="470" as="sourcePoint" />
+            <mxPoint x="1605" y="470" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="ffAO0UUNWGelMvOTSRRg-8" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;sourcePerimeterSpacing=10;endArrow=none;endFill=0;targetPerimeterSpacing=10;strokeWidth=3;" parent="1" edge="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1800" y="560" as="sourcePoint" />
-            <mxPoint x="1720" y="560" as="targetPoint" />
+            <mxPoint x="1685" y="510" as="sourcePoint" />
+            <mxPoint x="1605" y="510" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="ffAO0UUNWGelMvOTSRRg-9" value="ISP1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="1800" y="510" width="40" height="20" as="geometry" />
+          <mxGeometry x="1685" y="460" width="40" height="20" as="geometry" />
         </mxCell>
         <mxCell id="ffAO0UUNWGelMvOTSRRg-10" value="ISP2" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="1800" y="550" width="40" height="20" as="geometry" />
+          <mxGeometry x="1685" y="500" width="40" height="20" as="geometry" />
         </mxCell>
         <mxCell id="vZ7rwoYNhyhEUyLF4cWa-1" value="" style="curved=1;endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.25;exitDx=0;exitDy=0;" parent="1" source="GdHHIwHBryNfU4gJc2sP-27" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -94,11 +94,8 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="vZ7rwoYNhyhEUyLF4cWa-2" value="Interface: HUB-Lo&lt;br&gt;IP address: 172.16.255.251/32" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+        <mxCell id="vZ7rwoYNhyhEUyLF4cWa-2" value="Interface: HUB2-Lo&lt;br&gt;IP address: 172.16.255.253/32" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="1420" y="320" width="190" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="vZ7rwoYNhyhEUyLF4cWa-3" value="&lt;u&gt;Address Objects&lt;/u&gt;&lt;br&gt;&lt;div style=&quot;text-align: left&quot;&gt;&lt;span&gt;Datacenter: 192.168.1.0/24&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left&quot;&gt;&lt;span&gt;Branch-NET: 10.1.0.0/16&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="1690" y="440" width="160" height="50" as="geometry" />
         </mxCell>
         <mxCell id="vZ7rwoYNhyhEUyLF4cWa-4" value="Interface: port1&lt;br&gt;Role: WAN1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="1230" y="450" width="100" height="30" as="geometry" />
@@ -197,7 +194,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="-3Qsd2sIHpA97R9GTgFJ-9" value="Interface: HUB-Lo&lt;br&gt;IP address: 172.16.255.251/32" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+        <mxCell id="-3Qsd2sIHpA97R9GTgFJ-9" value="Interface: HUB1-Lo&lt;br&gt;IP address: 172.16.255.253/32" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="780" y="315" width="190" height="40" as="geometry" />
         </mxCell>
         <mxCell id="ZKTRBP_4zmgQwO_QxAbO-1" value="Interface: port3&lt;br&gt;IP address: 172.16.1.2/24" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">

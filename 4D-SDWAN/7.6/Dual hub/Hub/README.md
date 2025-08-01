@@ -6,7 +6,7 @@ For more details on SD-WAN rules, please see the [SD-WAN rules](https://docs.for
 
 The datacenter's subnet of 192.168.1.0/24 is learned through an eBGP peering with 172.16.1.1, and 172.16.2.1 for Hub1 and Hub2 respectively. The eBGP route to 192.168.1.0/24 is automatically distributed among all iBGP neighbors in the same Autonomous System without any further configuration.
 
-Each Hub's BGP loopback (HUB1: 172.16.255.252/32, HUB2: 172.16.255.250) is installed as a static route on the branch devices once the VPN overlays are established. This is done via an IKE extension: set exchange-ip-addr4 $Hub-Lo.
+Each Hub's BGP loopback (HUB1: 172.16.255.252/32, HUB2: 172.16.255.251) is installed as a static route on the branch devices once the VPN overlays are established. This is done via an IKE extension: set exchange-ip-addr4 $BGP-Lo.
 
 Hubs share the same IP address for their HUB_HC loopback interface to simplify branch health check configuration.
 

@@ -16,4 +16,4 @@ This is the first step of the overlay to indicate the various IPSec VPN tunnels 
 
 ### BGP Overlay
 This topology builds on the IPSec overlay topology to indicate how BGP settings on the hub and branch devices are selected.
-![Single hub branch overlay BGP](./SD_overlay_bgp.png?raw=true "BGP Overlay") 
+![Single hub branch overlay BGP](./SD_overlay_BGP.png?raw=true "BGP Overlay") 

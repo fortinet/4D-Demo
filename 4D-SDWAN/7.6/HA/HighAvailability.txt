@@ -1,0 +1,19 @@
+config system ha
+    set group-id 10
+    set group-name "SDWAN_DEMO"
+	set mode a-p
+	set password <password>
+    set hbdev "port5" 200 "port6" 100
+    set override disable
+	set priority 255
+	set monitor "port3" "port2" "port1"
+	set session-pickup enable
+	set route-ttl 30
+end
+config router bgp
+	config neighbor-group
+		edit "EDGE"
+			set bfd enable
+        next
+    next
+end

@@ -99,8 +99,8 @@ config vpn ipsec phase1-interface
         set dpd on-idle
         set network-overlay enable
         set network-id 1
-        set ipv4-start-ip 10.10.0.1
-        set ipv4-end-ip 10.10.31.252
+        set ipv4-start-ip 10.10.128.1
+        set ipv4-end-ip 10.10.159.252
         set ipv4-netmask 255.255.224.0
         set psksecret fortinet
         set dpd-retryinterval 60
@@ -117,8 +117,8 @@ config vpn ipsec phase1-interface
         set dpd on-idle
         set network-overlay enable
         set network-id 2
-        set ipv4-start-ip 10.10.32.1
-        set ipv4-end-ip 10.10.63.252
+        set ipv4-start-ip 10.10.160.1
+        set ipv4-end-ip 10.10.191.252
         set ipv4-netmask 255.255.224.0
         set psksecret fortinet
         set dpd-retryinterval 60
@@ -246,11 +246,11 @@ config router bgp
     end
     config neighbor-range
         edit 1
-            set prefix 10.10.0.0 255.255.224.0
+            set prefix 10.10.128.0 255.255.224.0
             set neighbor-group "VPN1"
         next
         edit 2
-            set prefix 10.10.32.0 255.255.224.0
+            set prefix 10.10.160.0 255.255.224.0
             set neighbor-group "VPN2"
         next
     end

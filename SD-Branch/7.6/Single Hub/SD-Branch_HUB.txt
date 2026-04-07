@@ -1,0 +1,288 @@
+config system global
+	set hostname "HUB"
+	set gui-app-detection-sdwan enable
+end
+config system interface
+	edit "port1"
+		set vdom "root"
+		set ip 10.198.1.1 255.255.255.248
+		set allowaccess ping fgfm
+		set outbandwidth 1000000
+		set alias "WAN1"
+		set role wan
+		set monitor-bandwidth enable
+	next
+	edit "port2"
+		set vdom "root"
+		set ip 10.198.2.1 255.255.255.248
+		set allowaccess ping fgfm
+		set outbandwidth 1000000
+		set alias "WAN2"
+		set role wan
+		set monitor-bandwidth enable
+	next
+	edit "port3"
+		set vdom "root"
+		set ip 172.16.1.2 255.255.255.252
+		set allowaccess ping
+		set alias "TO_DC"
+		set role lan
+	next
+	edit "VPN1"
+		set vdom "root"
+		set type tunnel
+		set outbandwidth 1000000
+		set interface "port1"
+		set monitor-bandwidth enable
+	next
+	edit "VPN2"
+		set vdom "root"
+		set type tunnel
+		set outbandwidth 1000000
+		set interface "port2"
+		set monitor-bandwidth enable
+	next
+	edit "BGP-Lo"
+		set vdom "root"
+		set ip 172.16.255.253 255.255.255.255
+		set allowaccess ping
+		set type loopback
+	next
+	edit "HUB_HC_Lo"
+		set vdom "root"
+		set ip 172.16.255.253 255.255.255.255
+		set allowaccess ping
+		set type loopback
+	next
+end
+config firewall address
+	edit "Branch_LAN"
+		set subnet 10.1.0.0 255.255.0.0
+	next
+	edit "Datacenter_LAN"
+		set subnet 192.168.1.0 255.255.0.0
+	next
+	edit "Company_SDWAN_Loopback"
+		set subnet 172.16.255.0 255.255.0.0
+	next
+end
+config system sdwan
+	set status enable
+	config zone
+		edit "virtual-wan-link"
+		next
+		edit "OVERLAYS"
+		next
+	end
+	config members
+		edit 1
+			set interface "VPN1"
+			set zone "OVERLAYS"
+		next
+		edit 2
+			set interface "VPN2"
+			set zone "OVERLAYS"
+		next
+	end
+	config health-check
+		edit "From_Edge"
+			set failtime 1
+			set sla-fail-log-period 10
+			set sla-pass-log-period 10
+			set members 0
+			set detect-mode remote
+			set sla-id-redistribute 1
+			set remote-probe-timeout 2500
+			config sla
+				edit 1
+					set link-cost-factor remote
+					set priority-out-sla 999
+				next
+			end
+		next
+	end
+end
+config vpn ipsec phase1-interface
+	edit "VPN1"
+		set type dynamic
+		set interface "port1"
+		set ike-version 2
+		set dpd on-demand
+		set proposal aes256-sha256
+		set peertype any
+		set dpd-retrycount 2
+		set dpd-retryinterval 2
+		set net-device disable
+		set add-route disable
+		set exchange-ip-addr4 172.16.255.252
+		set auto-discovery-sender enable
+		set psksecret *****
+		set network-overlay enable
+		set network-id 1
+		set transport udp
+	next
+	edit "VPN1-2"
+		set type dynamic
+		set interface "port3"
+		set ike-version 2
+		set dpd on-demand
+		set proposal aes256-sha256
+		set peertype any
+		set dpd-retrycount 2
+		set dpd-retryinterval 2
+		set net-device disable
+		set add-route disable
+		set exchange-ip-addr4 172.16.255.252
+		set auto-discovery-sender enable
+		set psksecret *****
+		set network-overlay enable
+		set network-id 2
+		set transport udp
+	next
+end
+config vpn ipsec phase2-interface
+	edit "VPN1"
+		set phase1name "VPN1"
+		set proposal aes256-sha256
+	next
+	edit "VPN1-2"
+		set phase1name "VPN2"
+		set proposal aes256-sha256
+	next
+end
+config firewall policy
+	edit 1
+		set name "Health Check - Peering"
+		set action accept
+		set srcintf "VPN1" "VPN2"
+		set dstintf "HUB_HC_Lo" "BGP-Lo"
+		set srcaddr "Company_SDWAN_Loopback"
+		set dstaddr "Company_SDWAN_Loopback"
+		set schedule "always"
+		set service "ALL"
+		set logtraffic all
+	next
+	edit 2
+		set name "ADVPN"
+		set action accept
+		set srcintf "VPN1" "VPN2"
+		set dstintf "VPN1" "VPN2"
+		set srcaddr "Branch_LAN"
+		set dstaddr "Branch_LAN"
+		set schedule "always"
+		set service "ALL"
+		set logtraffic all
+	next
+	edit 2
+		set name "Branch to Datacenter"
+		set action accept
+		set srcintf "VPN1" "VPN2"
+		set dstintf "port3"
+		set srcaddr "Branch_LAN"
+		set dstaddr "Datacenter_LAN"
+		set schedule "always"
+		set service "ALL"
+		set logtraffic all
+	next
+	edit 3
+		set name "Datacenter to Branch"
+		set action accept
+		set srcintf "port3"
+		set dstintf "VPN1" "VPN2"
+		set srcaddr "Datacenter_LAN"
+		set dstaddr "Branch_LAN"
+		set schedule "always"
+		set service "ALL"
+		set logtraffic all
+	next
+end
+config router route-map
+	edit "LOCAL_REGION"
+		config rule
+			edit 1
+				unset set-ip-prefsrc
+			next
+		end
+	next
+end
+config router static
+	edit 1
+		set gateway 10.198.1.2
+		set device "port1"
+	next
+	edit 2
+		set gateway 10.198.2.2
+		set device "port2"
+	next
+	edit 3
+		set dst 172.16.0.0 255.255.0.0
+		set blackhole enable
+		set vrf "0"
+	next
+	edit 4
+        set dst 10.1.0.0 255.255.0.0
+        set comment "Enable BGP to advertise the 10.1.0.0/16 network"
+        set distance 252
+        set blackhole enable
+        set vrf 0
+    next
+end
+config router bgp
+	set as "65000"
+	set router-id 172.16.255.252
+	set ebgp-multipath enable
+	set ibgp-multipath enable
+	set graceful-restart enable
+	set recursive-next-hop enable
+	set recursive-inherit-priority enable
+	config neighbor
+		edit "172.16.1.1"
+			set remote-as "65100"
+		next
+	end
+	config neighbor-group
+		edit "EDGE"
+			set advertisement-interval 1
+			set capability-graceful-restart enable
+			set next-hop-self enable
+			set soft-reconfiguration enable
+			set interface "BGP-Lo"
+			set remote-as "65000"
+			set update-source "BGP-Lo"
+		next
+	end
+	config neighbor-range
+		edit 1
+			set prefix 172.16.0.0 255.255.0.0
+			set neighbor-group "EDGE"
+		next
+	end
+	config network
+		edit 1
+			set prefix 172.16.0.0 255.255.0.0
+		next
+		edit 2
+			set prefix 10.1.0.0 255.255.0.0
+		next
+	end
+	config redistribute "connected"
+	end
+	config redistribute "isis"
+	end
+	config redistribute "ospf"
+	end
+	config redistribute "rip"
+	end
+	config redistribute "static"
+	end
+	config redistribute6 "connected"
+	end
+	config redistribute6 "isis"
+	end
+	config redistribute6 "ospf"
+	end
+	config redistribute6 "rip"
+	end
+	config redistribute6 "static"
+	end
+end

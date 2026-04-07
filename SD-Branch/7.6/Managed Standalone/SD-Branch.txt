@@ -1,0 +1,485 @@
+config switch-controller fortilink-settings
+    edit "fortilink"
+        set fortilink "fortilink"
+    next
+end
+config system interface
+    edit "vl_camera"
+        set vdom "root"
+        set ip 10.1.10.1 255.255.255.0
+        set device-identification enable
+        set interface "fortilink"
+        set vlanid 10
+    next
+    edit "vl_ap"
+        set vdom "root"
+        set ip 10.1.30.1 255.255.255.0
+        set device-identification enable
+        set interface "fortilink"
+        set vlanid 30
+    next
+    edit "vl_staff"
+        set vdom "root"
+        set ip 10.1.20.1 255.255.255.0
+        set device-identification enable
+        set interface "fortilink"
+        set vlanid 20
+    next
+    edit "vl_payment"
+        set vdom "root"
+        set ip 10.1.40.1 255.255.255.0
+        set device-identification enable
+        set interface "fortilink"
+        set vlanid 40
+    next
+end
+config wireless-controller vap
+    edit "Company-A"
+        set ssid "Guest-Company-A"
+        set passphrase **********
+        set schedule "always"
+    next
+end
+config system interface
+    edit "Company-A"
+        set vdom "root"
+        set ip 10.1.100.1 255.255.255.0
+        set type vap-switch
+        set device-identification enable
+        set role lan
+        set snmp-index 150
+    next
+end
+config firewall address
+    edit "Branch-LAN"
+        set subnet 10.1.0.0 255.255.0.0
+    next
+    edit "Camera-LAN"
+        set subnet 10.1.10.0 255.255.255.0
+    next
+    edit "Cloud_Camera_Video"
+        set subnet 192.0.2.1 255.255.255.255
+    next
+    edit "Guest-WiFi"
+        set subnet 10.1.100.0 255.255.255.0
+    next
+    edit "Payment-LAN"
+        set subnet 10.1.40.0 255.255.255.0
+    next
+    edit "RFC1918-10"
+        set subnet 10.0.0.0 255.0.0.0
+    next
+    edit "RFC1918-172"
+        set subnet 172.16.0.0 255.240.0.0
+    next
+    edit "RFC1918-192"
+        set subnet 192.168.0.0 255.255.0.0
+    next
+    edit "Staff-LAN"
+        set subnet 10.1.20.0 255.255.255.0
+    next
+end
+config firewall addrgrp
+    edit "RFC1918-GRP"
+        set member "RFC1918-10" "RFC1918-172" "RFC1918-192"
+    next
+end
+config system dhcp server
+    edit 1
+        set default-gateway 10.1.10.1
+        set netmask 255.255.255.0
+        set interface "vl_camera"
+        config ip-range
+            edit 1
+                set start-ip 10.1.10.2
+                set end-ip 10.1.10.254
+            next
+        end
+    next
+    edit 2
+        set dns-service default
+        set default-gateway 10.1.30.1
+        set netmask 255.255.255.0
+        set interface "vl_ap"
+        config ip-range
+            edit 1
+                set start-ip 10.1.30.2
+                set end-ip 10.1.30.254
+            next
+        end
+    next
+    edit 3
+        set dns-service default
+        set default-gateway 10.1.20.1
+        set netmask 255.255.255.0
+        set interface "vl_staff"
+        config ip-range
+            edit 1
+                set start-ip 10.1.20.2
+                set end-ip 10.1.20.254
+            next
+        end
+    next
+    edit 4
+        set dns-service default
+        set default-gateway 10.1.40.1
+        set netmask 255.255.255.0
+        set interface "vl_payment"
+        config ip-range
+            edit 1
+                set start-ip 10.1.40.2
+                set end-ip 10.1.40.254
+            next
+        end
+    next
+    edit 5
+        set ntp-service default
+        set dns-server1 8.8.8.8
+        set dns-server2 4.2.2.2
+        set default-gateway 10.1.100.1
+        set netmask 255.255.255.0
+        set interface "Company-A"
+        config ip-range
+            edit 1
+                set start-ip 10.1.100.2
+                set end-ip 10.1.100.254
+            next
+        end
+    next
+end
+config system sdwan
+    set status enable
+    config zone
+        edit "WAN1"
+        next
+        edit "WAN2"
+        next
+    end
+    config members
+        edit 1
+            set interface "port1"
+            set zone "WAN1"
+        next
+        edit 2
+            set interface "port2"
+            set zone "WAN2"
+        next
+    end
+    config health-check
+        edit "Internet"
+            set server 1.1.1.1
+            set update-cascade-interface disable
+            set update-static-route disable
+            set members 1 2
+            config sla
+                edit 1
+                    set link-cost-factor latency jitter packet-loss
+                    set latency-threshold 300
+                    set jitter-threshold 55
+                    set packetloss-threshold 3
+                next
+            end
+        next
+        edit "Security_Camera"
+            set server 192.0.2.1
+            set update-cascade-interface disable
+            set update-static-route disable
+            set members 1 2
+            config sla
+                edit 1
+                    set link-cost-factor latency jitter packet-loss
+                    set latency-threshold 300
+                    set jitter-threshold 55
+                    set packetloss-threshold 1
+                next
+            end
+        next
+        edit "Shopify"
+            set server www.shopify.com
+            set protocol https
+            set update-cascade-interface disable
+            set update-static-route disable
+            set members 0
+            config sla
+                edit 1
+                    set link-cost-factor latency jitter packet-loss
+                    set latency-threshold 300
+                    set jitter-threshold 25
+                    set packetloss-threshold 5
+                next
+            end
+            set fortiguard enable
+            set fortiguard-name "Shopify"
+        next
+        edit "YouTube"
+            set server www.youtube.com
+            set protocol https
+            set update-cascade-interface disable
+            set update-static-route disable
+            set members 0
+            config sla
+                edit 1
+                    set link-cost-factor latency jitter packet-loss
+                    set latency-threshold 180
+                    set jitter-threshold 25
+                    set packetloss-threshold 5
+                next
+            end
+            set fortiguard enable
+            set fortiguard-name "Google"
+        next
+    end
+    config service
+        edit 1
+            set name "YouTube_Priority"
+            set mode priority
+            set src "Branch-LAN"
+            set internet-service enable
+            set internet-service-app-ctrl 31077
+            set health-check "YouTube"
+            set link-cost-factor packet-loss
+            set priority-members 1 2
+        next
+        edit 2
+            set name "Shopify_Priority"
+            set mode priority
+            set src "Branch-LAN"
+            set internet-service enable
+            set internet-service-app-ctrl 36591
+            set health-check "Shopify"
+            set priority-members 1 2
+        next
+        edit 3
+            set name "Security_Camera_Stream"
+            set mode priority
+            set dst "Cloud_Camera_Video"
+            set src "Camera-LAN"
+            set health-check "Security_Camera"
+            set link-cost-factor packet-loss
+            set priority-members 1 2
+        next
+        edit 4
+            set name "Payment"
+            set mode priority
+            set dst "RFC1918-GRP"
+            set dst-negate enable
+            set src "Payment-LAN"
+            set health-check "Internet"
+            set priority-members 1 2
+        next
+        edit 5
+            set name "Non-Critical_Internet"
+            set dst "RFC1918-GRP"
+            set dst-negate enable
+            set src "Branch-LAN"
+            set priority-members 2
+        next
+    end
+end
+config firewall policy
+    edit 2
+        set name "Camera Upload"
+        set action accept
+        set srcintf "vl_camera"
+        set dstintf "WAN1" "WAN2"
+        set nat enable
+        set srcaddr "Camera-LAN"
+        set dstaddr "Cloud_Camera_Video"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+    next
+    edit 3
+        set name "Retail"
+        set action accept
+        set srcintf "vl_staff"
+        set dstintf "WAN1" "WAN2"
+        set nat enable
+        set srcaddr "Staff-LAN"
+        set dstaddr "RFC1918-GRP"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+        set dstaddr-negate enable
+    next
+    edit 4
+        set name "Payment"
+        set action accept
+        set srcintf "vl_payment"
+        set dstintf "WAN1" "WAN2"
+        set nat enable
+        set srcaddr "Payment-LAN"
+        set dstaddr "RFC1918-GRP"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+        set dstaddr-negate enable
+    next
+    edit 5
+        set name "Guest Internet"
+        set action accept
+        set srcintf "Company-A"
+        set dstintf "WAN2"
+        set nat enable
+        set srcaddr "Guest-WiFi"
+        set dstaddr "RFC1918-GRP"
+        set schedule "always"
+        set service "ALL"
+        set logtraffic all
+        set dstaddr-negate enable
+    next
+end
+config wireless-controller wtp-profile
+    edit "Company-A Wifi"
+        config platform
+            set type 241K
+            set ddscan enable
+        end
+        config radio-1
+            set band 802.11g 802.11n-2G 802.11ax-2G 802.11be-2G
+            set channel "1" "6" "11"
+        end
+        config radio-2
+            set band 802.11a 802.11n-5G 802.11ax-5G 802.11ac-5G 802.11be-5G
+            set channel-bonding 40MHz
+        end
+        set handoff-sta-thresh 55
+        config radio-3
+            set mode disabled
+        end
+        config radio-4
+            set mode monitor
+        end
+    next
+    edit "FAP241K-default"
+        config platform
+            set type 241K
+            set ddscan enable
+        end
+        config radio-1
+            set band 802.11g 802.11n-2G 802.11ax-2G 802.11be-2G
+            set channel "1" "6" "11"
+        end
+        config radio-2
+            set band 802.11a 802.11n-5G 802.11ax-5G 802.11ac-5G 802.11be-5G
+            set channel-bonding 40MHz
+        end
+        set handoff-sta-thresh 55
+        config radio-3
+            set mode disabled
+        end
+        config radio-4
+            set mode monitor
+        end
+    next
+end
+config wireless-controller wtp
+    edit "FP241K****000001"
+        set admin enable
+        set name "FP241K-1"
+        set wtp-profile "Company-A Wifi"
+    next
+end
+config switch-controller dynamic-port-policy
+    edit "fortilink"
+        set fortilink "fortilink"
+    next
+end
+config switch-controller managed-switch
+    edit "SM10GF-1"
+        set sn "SM10GF****000001"
+        set fsw-wan1-peer "fortilink"
+        set fsw-wan1-admin enable
+        set max-allowed-trunk-members 8
+    next
+end
+config switch-controller managed-switch
+    edit "SM10GF-1"
+        config ports
+            edit "port1"
+                set vlan "_default"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port10"
+                set vlan "_default"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port11"
+                set vlan "_default"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port12"
+                set vlan "_default"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port13"
+                set vlan "_default"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port14"
+                set vlan "_default"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port2"
+                set vlan "_default"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port3"
+                set vlan "vl_camera"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port4"
+                set vlan "vl_camera"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port5"
+                set vlan "vl_ap"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port6"
+                set vlan "vl_staff"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port7"
+                set vlan "vl_payment"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port8"
+                set vlan "_default"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+            edit "port9"
+                set vlan "_default"
+                set allowed-vlans "quarantine"
+                set untagged-vlans "quarantine"
+                set export-to "root"
+            next
+        end
+    next
+end

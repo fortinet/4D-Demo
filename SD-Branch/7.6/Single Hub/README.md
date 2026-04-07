@@ -4,6 +4,10 @@
 
 For further details on SD-Branch features and deployment methods, such as using FortiManager to manage your configuration and deployment, please see the [SD-WAN section](https://docs.fortinet.com/sdwan/7.6) of our document library.
 
+# Topology
+![SD-Branch](./SD-Branch_76_Deployment_Guide_topology_intro_1.png?raw=true "SD-Branch") 
+![SD-Branch](./SD-Branch_76_Deployment_Guide_topology_intro_2.png?raw=true "SD-Branch") 
+
 # Overview
 This directory contains configuration to enable SD-WAN and configure a switch and AP to be used for branch LAN access. This configuration compliments the [SD-Branch deployment guide](https://docs.fortinet.com/document/fortimanager/7.6.5/single-hub-sd-branch-deployment/772176/introduction).
 
@@ -89,9 +93,6 @@ The following settings are specific to the demo and should be changed to fit you
 
 4. IPsec phase1-interface local-id.
 
-# Topology
-![SD-Branch](./SD-Branch_Deployment_Guide_topology_intro.png?raw=true "SD-Branch") 
-![SD-Branch](./SD-Branch_Deployment_Guide_topology_intro.png?raw=true "SD-Branch") 
 
 # How to
 Review the assumptions section and make the necessary changes to the configuration to match your deployment.

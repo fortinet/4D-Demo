@@ -300,6 +300,17 @@ config firewall policy
         set service "ALL"
     next
 end
+config router prefix-list
+    edit "all_prefixes"
+        config rule
+            edit 1
+                set prefix any
+                unset ge
+                unset le
+            next
+        end
+    next
+end
 config router route-map
     edit "port3_only"
         config rule

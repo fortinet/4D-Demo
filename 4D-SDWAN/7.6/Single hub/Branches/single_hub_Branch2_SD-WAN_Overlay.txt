@@ -183,7 +183,7 @@ config system sdwan
             end
             set priority-zone "HUB1"
         next
-        edit 2
+        edit 4
             set name "Non-Critical_Internet"
             set dst "RFC1918-GRP"
             set dst-negate enable

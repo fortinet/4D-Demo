@@ -9,12 +9,12 @@ The datacenter's subnet of 192.168.1.0/24 is learned through an eBGP peering wit
 The Hub's BGP loopback (172.16.255.252/32) is installed as a static route on the branch devices once the VPN overlays are established. This is done via an IKE extension: set exchange-ip-addr4 172.16.255.252.
 
 The HUB utilizes a blackhole static route for branch summary (10.1.0.0/16). This allows the hubs to advertise the branch summary via BGP to all the branches when combined with:
-
+```
 config router bgp
     config network
         edit 2
             set prefix 10.1.0.0 255.255.0.0
-            
+```
             
 
 # Assumptions
@@ -34,7 +34,7 @@ The following settings are specific to the demo and should be changed to fit you
 5) If your branch subnets cannot be easily summarized, you can configure multiple network prefixes in bgp for each:
 See the [FortiGate Admin Guide](https://docs.fortinet.com/document/fortigate/7.6.99/administration-guide/63589/active-dynamic-bgp-neighbor-triggered-by-advpn-shortcut) for a complete example.
 
-
+```
 config router bgp
     config network
         edit 10
@@ -43,5 +43,6 @@ config router bgp
         edit 11
             set prefix 172.200.99.0 255.255.255.0
         end
+```
         
 Alternatively, you can utilize default routes on the branch devices to direct traffic to the hubs.

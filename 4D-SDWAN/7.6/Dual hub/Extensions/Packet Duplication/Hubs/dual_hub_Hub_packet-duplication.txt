@@ -1,0 +1,12 @@
+config system sdwan
+    config duplication
+        edit 1
+            set srcaddr "Branch-LAN"
+            set dstaddr "Datacenter-LAN"
+            set srcintf "VPN"
+            set dstintf "port3"
+            set service "ALL"
+            set packet-de-duplication enable
+        next
+    end
+end

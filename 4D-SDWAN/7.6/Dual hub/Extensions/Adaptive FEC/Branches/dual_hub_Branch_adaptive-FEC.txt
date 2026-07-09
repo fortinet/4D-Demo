@@ -1,0 +1,60 @@
+config firewall service custom
+    edit "Custom-App-5000"
+        set udp-portrange 5000
+    next
+end
+config vpn ipsec fec
+    edit "m1"
+        config mappings
+            edit 1
+                set base 8
+                set redundant 2
+                set packet-loss-threshold 10
+            next
+            edit 2
+                set base 9
+                set redundant 3
+                set bandwidth-up-threshold 950000
+            next
+        end
+    next
+end
+config vpn ipsec phase1-interface
+    edit "HUB1-VPN1"
+        set fec-egress enable
+        set fec-codec rs
+        set fec-health-check "HUB"
+        set fec-mapping-profile "m1"
+    next
+    edit "HUB1-VPN2"
+        set fec-egress enable
+        set fec-codec rs
+        set fec-health-check "HUB"
+        set fec-mapping-profile "m1"
+    next
+    edit "HUB2-VPN1"
+        set fec-egress enable
+        set fec-codec rs
+        set fec-health-check "HUB"
+        set fec-mapping-profile "m1"
+    next
+    edit "HUB2-VPN2"
+        set fec-egress enable
+        set fec-codec rs
+        set fec-health-check "HUB"
+        set fec-mapping-profile "m1"
+    next
+end
+config firewall policy
+    edit 8
+        set action accept
+        set srcintf "port2"
+        set dstintf "HUB1" "HUB2"
+        set srcaddr "Branch-LAN"
+        set dstaddr "Datacenter-LAN1"
+        set schedule "always"
+        set service "Custom-App-5000"
+        set logtraffic all
+        set fec enable
+    next
+end

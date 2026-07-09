@@ -1,0 +1,10 @@
+config system sdwan
+	set duplication-max-num 4
+	config duplication
+        edit 1
+            set packet-duplication on-demand
+            set service-id 1
+            set sla-match-service enable
+        next
+    end
+end

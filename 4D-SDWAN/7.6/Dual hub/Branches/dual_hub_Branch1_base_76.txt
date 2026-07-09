@@ -116,27 +116,37 @@ config system sdwan
             set interface "HUB1-VPN1"
             set zone "HUB1"
             set source 172.16.0.1
+            set cost 10
             set priority 10
+			set priority-in-sla 10
+			set priority-out-sla 110
         next
         edit 4
             set interface "HUB1-VPN2"
             set zone "HUB1"
             set source 172.16.0.1
+            set cost 11
             set priority 10
+			set priority-in-sla 11
+			set priority-out-sla 111
         next
         edit 5
             set interface "HUB2-VPN1"
             set zone "HUB2"
             set source 172.16.0.1
-            set cost 10
+            set cost 20
             set priority 10
+			set priority-in-sla 20
+			set priority-out-sla 120
         next
         edit 6
             set interface "HUB2-VPN2"
             set zone "HUB2"
             set source 172.16.0.1
-            set cost 10
+            set cost 21
             set priority 10
+			set priority-in-sla 21
+			set priority-out-sla 121
         next
     end
     config health-check

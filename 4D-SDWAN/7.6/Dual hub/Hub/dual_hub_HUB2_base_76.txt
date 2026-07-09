@@ -54,6 +54,42 @@ config firewall address
         set subnet 192.168.1.0 255.255.255.0
     next
 end
+config system sdwan
+    set status enable
+    config zone
+        edit "virtual-wan-link"
+        next
+        edit "VPN"
+        next
+    end
+    config members
+        edit 1
+            set interface "VPN1"
+            set zone "VPN"
+        next
+        edit 2
+            set interface "VPN2"
+            set zone "VPN"
+        next
+    end
+    config health-check
+        edit "From_Edge"
+            set detect-mode remote
+            set remote-probe-timeout 2500
+            set failtime 1
+            set sla-id-redistribute 1
+            set sla-fail-log-period 10
+            set sla-pass-log-period 10
+            set members 0
+            config sla
+                edit 1
+                    set link-cost-factor remote
+                    set priority-out-sla 999
+                next
+            end
+        next
+    end
+end				   
 config vpn ipsec phase1-interface
     edit "VPN1"
         set type dynamic
@@ -64,7 +100,7 @@ config vpn ipsec phase1-interface
         set exchange-ip-addr4 172.16.255.251
         set proposal aes256-sha256
         set add-route disable
-        set dpd on-idle
+        set dpd on-demand
         set auto-discovery-sender enable
         set network-overlay enable
         set network-id 1
@@ -82,7 +118,7 @@ config vpn ipsec phase1-interface
         set exchange-ip-addr4 172.16.255.251
         set proposal aes256-sha256
         set add-route disable
-        set dpd on-idle
+        set dpd on-demand
         set auto-discovery-sender enable
         set network-overlay enable
         set network-id 2
@@ -105,7 +141,7 @@ end
 config firewall policy
     edit 1
         set name "Branch to Datacenter"
-        set srcintf "VPN1" "VPN2"
+        set srcintf "VPN"
         set dstintf "port3"
         set action accept
         set srcaddr "Branch-LAN"
@@ -117,7 +153,7 @@ config firewall policy
     edit 2
         set name "Datacenter to Branch"
         set srcintf "port3"
-        set dstintf "VPN1" "VPN2"
+        set dstintf "VPN"
         set action accept
         set srcaddr "Datacenter-LAN"
         set dstaddr "Branch-LAN"
@@ -127,8 +163,8 @@ config firewall policy
     next
     edit 3
         set name "Branch to Branch"
-        set srcintf "VPN1" "VPN2"
-        set dstintf "VPN1" "VPN2"
+        set srcintf "VPN"
+        set dstintf "VPN"
         set action accept
         set srcaddr "Branch-LAN"
         set dstaddr "Branch-LAN"
@@ -138,7 +174,7 @@ config firewall policy
     next
     edit 4
         set name "Health Check - Peering"
-        set srcintf "VPN1" "VPN2"
+        set srcintf "VPN"
         set dstintf "HUB1-Lo" "BGP-Lo"
         set action accept
         set srcaddr "ACME_Loopback"

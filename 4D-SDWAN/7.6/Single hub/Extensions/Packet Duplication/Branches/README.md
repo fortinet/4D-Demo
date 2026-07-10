@@ -1,4 +1,4 @@
-# Dual Hub Packet Duplication - Branches
+# Single Hub Packet Duplication - Branches
 
 SD-WAN duplication rules specify SD-WAN service rules to trigger packet duplication. This allows the duplication to occur based on an SD-WAN rule instead of the source, destination, and service parameters in the duplication rule.
 
@@ -20,7 +20,7 @@ config system sdwan
                     set id 1
                 next
             end
-            set priority-members 3 4 5 6
+            set priority-zone "HUB1"
         next
 	end
 end

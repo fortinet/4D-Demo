@@ -1,5 +1,5 @@
 config system sdwan
-	set duplication-max-num 4
+	set duplication-max-num 2
 	config duplication
         edit 1
             set packet-duplication on-demand
